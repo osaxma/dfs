@@ -49,33 +49,8 @@ Each `<script-command>` is shown below under the available scripts.
     
     Use case: keep the project clean and avoid confusing myself.
 
-- **Find Unused Widgets** *(status: TBD)*<br>
-    >**Area**: project hygiene<br>
-    **command**: TBD <br>
-    **alias:** TBD
 
-    The idea is to find unused widgets within a project. This cannot be used with packages where since widgets could be in use outside the project. 
-
-    Use case: I always have to comment a widget out to see if it's used elsewhere in the project (i.e. I wait for files to go red).
-
-
-- **Find Unused Top Level Declaration** *(status: TBD)*<br>
-    >**Area**: project hygiene<br>
-    **command**: TBD <br>
-    **alias:** TBD
-
-    The idea is to find unused top level functions or global variables within a project. This cannot be used with packages since such definitions could be in use outside the project. 
-
-    Use case: I always have to comment a functions/variables out to see if they're used elsewhere in the project (i.e. I wait for files to go red).
-
-- **Find All Unused** *(status: TBD)*<br>
-    >**Area**: project hygiene<br>
-    **command**: TBD <br>
-    **alias:** TBD
-
-    Run all the other scripts to find unused packages, widgets, top level declarations, etc. 
-
-
+## WIP Scripts
 - **Generate Data Classes** *(status: WIP)*<br>
     >**Area**: utility<br>
     **command**: `generate-data-classes` <br>
@@ -88,7 +63,43 @@ Each `<script-command>` is shown below under the available scripts.
 
     Generated code looks clean and tidy but the extension does few things different than I like (e.g. handling default values and some other minor details). 
 
-## Installation
 
-TBD
+
+
+## Ideas for future scripts
+- **Find Unused Widgets** *(status: TBD)*<br>
+    >**Area**: project hygiene<br>
+    **command**: TBD <br>
+    **alias:** TBD
+    <!-- Find out how `find all references` is invoked at the language server -- maybe spin up the server to utilize it -->
+    The idea is to find unused widgets within a project. This cannot be used with packages where since widgets could be in use outside the project. 
+
+    Use case: I always have to comment a widget out to see if it's used elsewhere in the project (i.e. I wait for files to go red).
+
+
+- **Find Unused Top Level Declaration** *(status: TBD)*<br>
+    >**Area**: project hygiene<br>
+    **command**: TBD <br>
+    **alias:** TBD
+    <!-- Find out how `find all references` is invoked at the language server -- maybe spin up the server to utilize it -->
+    The idea is to find unused top level functions or global variables within a project. This cannot be used with packages since such definitions could be in use outside the project. 
+
+    Use case: I always have to comment a functions/variables out to see if they're used elsewhere in the project (i.e. I wait for files to go red).
+
+- **Find All Unused** *(status: TBD)*<br>
+    >**Area**: project hygiene<br>
+    **command**: TBD <br>
+    **alias:** TBD
+    <!-- Find out how `find all references` is invoked at the language server -- maybe spin up the server to utilize it -->
+    <!-- or make this a report generator about the project/package/etc. -->
+    <!-- a lot of ideas can be done here -- dependency graph between files/folders/packages, API surface measure, code coverage, etc. -->
+    <!-- for dependency graph, see: https://pub.dev/packages/lakos and also see https://pub.dev/packages/directed_graph -->
+    Run all the other scripts to find unused packages, widgets, top level declarations, etc. 
+
+- **Change Project Name** *(status: TBD)*<br>
+    >**Area**: pain<br>
+    **command**: TBD <br>
+    **alias:** TBD
+
+    This is mainly for Flutter, and especially for multiplatform code where the name has to be changed in various places. 
 
