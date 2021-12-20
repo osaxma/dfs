@@ -1,8 +1,12 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:dfs/src/find_unused_packages/find_unused_packages.dart';
+
 import 'base.dart';
 
 class FindUnusedPackagesCommand extends DFSCommand {
   FindUnusedPackagesCommand() {
-   
     argParser.addFlag(name);
   }
 
@@ -13,5 +17,21 @@ class FindUnusedPackagesCommand extends DFSCommand {
   final List<String> aliases = ['fup'];
 
   @override
-  final String description = 'Find unused packages within a dart or flutter projects (only those used in lib and defined under dependencies)';
+  final String description =
+      'Find unused packages within a dart or flutter projects (only those used in lib and defined under dependencies)';
+
+  @override
+  FutureOr<void>? run() async {
+    // ignore: unused_local_variable
+    final unusedPackages = await UnusedPackagesFinder(
+      Directory.current,
+      logger,
+    ).findUnusedPackages();
+
+    logger.stdout('The following packages are not used anywhere in the lib directory. If they are used');
+    logger.stdout('elsewhere (e.g. /test), consider moving them to `dev_dependencies` in `pubspec.yaml`');
+    unusedPackages.forEach((element) {
+      logger.stdout('   - $element');
+    });
+  }
 }
