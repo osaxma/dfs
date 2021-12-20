@@ -5,6 +5,7 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:cli_util/cli_logging.dart';
 import 'package:dfs/src/common/ast_utils.dart';
 import 'package:dfs/src/common/io_utils.dart';
+import 'package:dfs/src/common/path_utils.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:path/path.dart' as p;
 
@@ -83,7 +84,7 @@ class CollectImportsVisitor extends RecursiveAstVisitor {
   visitImportDirective(ImportDirective node) {
     final uri = node.uri.stringValue;
     if (uri != null) {
-      final packageName = getPackageName(uri);
+      final packageName = extractPackageNameFromImportUri(uri);
       if (packageName != null) {
         imports.add(packageName);
         logger.trace('found import for package name: $packageName');
@@ -91,17 +92,4 @@ class CollectImportsVisitor extends RecursiveAstVisitor {
     }
     return super.visitImportDirective(node);
   }
-
-  String? getPackageName(String string) {
-    final match = packageCapture.firstMatch(string);
-    try {
-      return match?.group(0)?.split(':')[1];
-    } catch (e) {
-      logger.trace('failed to parse package name: $string}. Received the following error $e');
-      return null;
-    }
-  }
 }
-
-// finds `package:package_name_123`
-final packageCapture = RegExp(r'package:\w+(?=\/)');
