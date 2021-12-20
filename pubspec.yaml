@@ -9,9 +9,12 @@ environment:
 
 dependencies:
   analyzer: ^3.0.0
+  cli_util: ^0.3.5
   code_builder: ^4.1.0
   dart_style: ^2.2.1
+  logging: ^1.0.2
   path: ^1.8.0
+  pubspec_parse: ^1.2.0
 
 dev_dependencies:
   lints: ^1.0.0
