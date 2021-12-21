@@ -1,4 +1,4 @@
-# DFS - Dart Flutter Scripts 
+# DFS - Dart Flutter Scripts (warning everything is still WIP)
 
 A collection of useful scripts for dart or flutter projects. 
 
