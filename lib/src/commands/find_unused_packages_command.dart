@@ -6,9 +6,7 @@ import 'package:dfs/src/find_unused_packages/find_unused_packages.dart';
 import 'base.dart';
 
 class FindUnusedPackagesCommand extends DFSCommand {
-  FindUnusedPackagesCommand() {
-    argParser.addFlag(name);
-  }
+  FindUnusedPackagesCommand();
 
   @override
   final String name = 'find-unused-packages';
