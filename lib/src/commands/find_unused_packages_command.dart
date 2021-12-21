@@ -24,9 +24,9 @@ class FindUnusedPackagesCommand extends DFSCommand {
   FutureOr<void>? run() async {
     // ignore: unused_local_variable
     final unusedPackages = await UnusedPackagesFinder(
-      Directory.current,
-      logger,
-    ).findUnusedPackages();
+      directory: Directory.current,
+      logger: logger,
+    ).find();
 
     logger.stdout('The following packages are not used anywhere in the lib directory. If they are used');
     logger.stdout('elsewhere (e.g. /test), consider moving them to `dev_dependencies` in `pubspec.yaml`');

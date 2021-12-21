@@ -35,7 +35,7 @@ class DFSCommandRunner extends CommandRunner<void> {
   Future<void> runCommand(ArgResults topLevelResults) async {
     if (topLevelResults['version'] == true) {
       // ignore: avoid_print
-      print('dfs $dfsVersion');
+      print(dfsVersion);
       return;
     }
     await super.runCommand(topLevelResults);

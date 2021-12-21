@@ -14,12 +14,16 @@ import 'dart:io';
 class UnusedPackagesFinder {
   final Logger logger;
   final Directory directory;
-  UnusedPackagesFinder(this.directory, this.logger);
+
+  UnusedPackagesFinder({
+    required this.directory,
+    required this.logger,
+  });
 
   final dartFilesInLibFolder = <File>[];
   final dependencies = <String>[];
 
-  Future<List<String>> findUnusedPackages() async {
+  Future<List<String>> find() async {
     final file = await getPubspecYamlFile(directory);
     logger.trace('reading pubspec.yaml');
     getPackagesFromPubSpecYaml(file.readAsStringSync());
