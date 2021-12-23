@@ -43,7 +43,9 @@ class GenerateDataClassesCommand extends DFSCommand {
         logger.stdout('   - file: ${p.basename(results.failed[i].path)}');
         logger.stdout('   - file: ${results.errors[i]}');
       }
-      results.failed.forEach((element) {});
+      results.failed.forEach((element) {
+        logger.stdout('   - ${p.basename(element.path)}');
+      });
     }
   }
 }

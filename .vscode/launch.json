@@ -17,6 +17,13 @@
             "type": "dart",
             "program": "bin/dfs.dart",
             "args": ["fup"]
+        },
+        {
+            "name": "dfs - futl",
+            "request": "launch",
+            "type": "dart",
+            "program": "bin/dfs.dart",
+            "args": ["futl"]
         }
     ]
 }

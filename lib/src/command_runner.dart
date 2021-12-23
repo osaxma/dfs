@@ -1,6 +1,7 @@
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:dfs/src/commands/find_unused_packages_command.dart';
+import 'package:dfs/src/commands/find_unused_top_level_command.dart';
 
 import 'version.dart';
 import 'commands/generate_data_classes_command.dart';
@@ -29,6 +30,7 @@ class DFSCommandRunner extends CommandRunner<void> {
 
     addCommand(FindUnusedPackagesCommand());
     addCommand(GenerateDataClassesCommand());
+    addCommand(FindUnusedTopLevelCommand());
   }
 
   @override

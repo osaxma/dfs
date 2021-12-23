@@ -50,6 +50,14 @@ Each `<script-command>` is shown below under the available scripts.
     Use case: keep the project clean and avoid confusing myself.
 
 
+- **Find Unused Top Level Declaration** *(status: MVP)*<br>
+    >**Area**: project hygiene<br>
+    **command**: `find-unused-top-level` <br>
+    **alias:** `futl`
+    
+    Finds unused top-level elements (classes, typedefs, getters, setters, functions and fields). This useful for dart/flutter projects that are not packages. 
+
+
 ## WIP Scripts
 - **Generate Data Classes** *(status: WIP)*<br>
     >**Area**: utility<br>
@@ -75,16 +83,6 @@ Each `<script-command>` is shown below under the available scripts.
     The idea is to find unused widgets within a project. This cannot be used with packages where since widgets could be in use outside the project. 
 
     Use case: I always have to comment a widget out to see if it's used elsewhere in the project (i.e. I wait for files to go red).
-
-
-- **Find Unused Top Level Declaration** *(status: TBD)*<br>
-    >**Area**: project hygiene<br>
-    **command**: TBD <br>
-    **alias:** TBD
-    <!-- Find out how `find all references` is invoked at the language server -- maybe spin up the server to utilize it -->
-    The idea is to find unused top level functions or global variables within a project. This cannot be used with packages since such definitions could be in use outside the project. 
-
-    Use case: I always have to comment a functions/variables out to see if they're used elsewhere in the project (i.e. I wait for files to go red).
 
 - **Find All Unused** *(status: TBD)*<br>
     >**Area**: project hygiene<br>
