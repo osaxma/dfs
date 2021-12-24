@@ -56,7 +56,15 @@ Each `<script-command>` is shown below under the available scripts.
     **alias:** `futl`
     
     Finds unused top-level elements (classes, typedefs, getters, setters, functions and fields). This useful for dart/flutter projects that are not packages. 
-
+    
+    **Sample output**
+    ```sh
+    [~/cwd]$ dart run bin/dfs.dart futl
+        finding unused top level declarations...  
+        The following top level declarations are not used anywhere 
+            - /cwd/lib/src/version.dart:7:7
+            - /cwd/lib/src/common/ast_utils.dart:7:9
+    ```
 
 ## WIP Scripts
 - **Generate Data Classes** *(status: WIP)*<br>
@@ -75,25 +83,6 @@ Each `<script-command>` is shown below under the available scripts.
 
 
 ## Ideas for future scripts
-- **Find Unused Widgets** *(status: TBD)*<br>
-    >**Area**: project hygiene<br>
-    **command**: TBD <br>
-    **alias:** TBD
-    <!-- Find out how `find all references` is invoked at the language server -- maybe spin up the server to utilize it -->
-    The idea is to find unused widgets within a project. This cannot be used with packages where since widgets could be in use outside the project. 
-
-    Use case: I always have to comment a widget out to see if it's used elsewhere in the project (i.e. I wait for files to go red).
-
-- **Find All Unused** *(status: TBD)*<br>
-    >**Area**: project hygiene<br>
-    **command**: TBD <br>
-    **alias:** TBD
-    <!-- Find out how `find all references` is invoked at the language server -- maybe spin up the server to utilize it -->
-    <!-- or make this a report generator about the project/package/etc. -->
-    <!-- a lot of ideas can be done here -- dependency graph between files/folders/packages, API surface measure, code coverage, etc. -->
-    <!-- for dependency graph, see: https://pub.dev/packages/lakos and also see https://pub.dev/packages/directed_graph -->
-    Run all the other scripts to find unused packages, widgets, top level declarations, etc. 
-
 - **Change Project Name** *(status: TBD)*<br>
     >**Area**: pain<br>
     **command**: TBD <br>
@@ -149,6 +138,21 @@ Use case: This was a pain when cloning a monorepo. I had this issue when I clone
 The script should find all `pubspec.yaml` files recursively in the cwd. 
 
 -->
+
+
+<!-- 
+ **Generate Analytical Report** *(status: TBD)*<br>
+    >**Area**: utility<br>
+    **command**: TBD <br>
+    **alias:** TBD
+     a lot of ideas can be done here -- 
+     
+    - Run all the other scripts to find unused packages, top level declarations, etc. 
+    - Generate dependency graph between files/folders/packages, API surface measure, code coverage, etc.
+        - for dependency graph, see:
+            https://pub.dev/packages/lakos 
+            https://pub.dev/packages/directed_graph
+ -->
 
 
 <!-- ----------------------------------------------------------------------- -->

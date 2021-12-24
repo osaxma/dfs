@@ -1,3 +1,5 @@
+// based on analysis_server_client example: 
+// https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server_client/example/example.dart
 import 'dart:async';
 import 'dart:io';
 
@@ -8,7 +10,8 @@ import 'package:analysis_server_client/server.dart';
 import 'package:path/path.dart' as p;
 
 // TODO: make sure there's only one server during the life time of an application
-// TODO: make sure the process of the analysis server is closed
+// TODO: make sure the process of the analysis server is closed when the app exits
+// TODO: figure out if we can tap into an existing server or if analysis_server_client already does it. 
 class AnalysisServerClient {
   final void Function(Object error) onServerError;
   late String _target;
