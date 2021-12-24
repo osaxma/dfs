@@ -32,7 +32,15 @@ String findSdkPath() {
   }
 }
 
-String? getServerPath() {
+
+// This will look for dart-sdk/bin/dart/analysis_server.dart.snapshot
+// In command line it'll be:
+// `dart analysis_server.dart.snapshot [arguments]` 
+// This is similar to calling:
+// `dart language-server --protocol=analyzer [arguments]` (lsp is default for `language-server`)
+//
+// TODO: what if `analysis_server.dart.snapshot` does not exist? 
+String getServerPath() {
   final sdkPath = findSdkPath();
   // see: sdk/pkg/analysis_server_client/lib/server.dart
   // Look for snapshots/analysis_server.dart.snapshot.

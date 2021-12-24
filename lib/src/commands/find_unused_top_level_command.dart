@@ -24,7 +24,7 @@ class FindUnusedTopLevelCommand extends DFSCommand {
     final server = AnalysisServerClient(Directory.current, (e) {
       print('listening to server errors: $e');
     });
-    await server.start(serverPath: getServerPath());
+    await server.start(serverPath: '');
     final progress = logger.progress('finding unused top level declarations');
     // ignore: unused_local_variable
     final unusedTopLevel = await UnusedTopLevelFinder(
