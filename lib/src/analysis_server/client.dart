@@ -1,4 +1,4 @@
-// based on analysis_server_client example: 
+// based on analysis_server_client example:
 // https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server_client/example/example.dart
 import 'dart:async';
 import 'dart:io';
@@ -11,18 +11,17 @@ import 'package:path/path.dart' as p;
 
 // TODO: make sure there's only one server during the life time of an application
 // TODO: make sure the process of the analysis server is closed when the app exits
-// TODO: figure out if we can tap into an existing server or if analysis_server_client already does it. 
+// TODO: figure out if we can tap into an existing server or if analysis_server_client already does it.
 class AnalysisServerClient {
   final void Function(Object error) onServerError;
-  late String _target;
-  late Directory _directory;
+  late String targetDir;
   final server = Server();
   late _Handler handler;
 
   static Future<void> forceStop() async {
-    if(_server != null) {
+    if (_server != null) {
       await _server!.stop();
-    } 
+    }
   }
 
   static AnalysisServerClient? _server;
@@ -42,14 +41,12 @@ class AnalysisServerClient {
     Directory directory,
     this.onServerError,
   ) {
-    _directory = Directory(p.normalize(p.absolute(directory.path)));
-    _target = _directory.path;
-    if (!_directory.existsSync()) {
-      throw Exception('Could not find directory $_target');
+    if (!directory.existsSync()) {
+      throw Exception('Could not find directory $targetDir');
     }
+    targetDir = p.normalize(p.absolute(directory.path));
     handler = _Handler(server);
   }
-
 
   Future<void> start() async {
     await server.start();
@@ -65,7 +62,7 @@ class AnalysisServerClient {
     await server.send(SERVER_REQUEST_SET_SUBSCRIPTIONS, ServerSetSubscriptionsParams([ServerService.STATUS]).toJson());
     // logger.trace('setting subscription for rootTarget $_target');
     await server.send(
-        ANALYSIS_REQUEST_SET_ANALYSIS_ROOTS, AnalysisSetAnalysisRootsParams([_target], const []).toJson());
+        ANALYSIS_REQUEST_SET_ANALYSIS_ROOTS, AnalysisSetAnalysisRootsParams([targetDir], const []).toJson());
   }
 
   Future<int> stop() async {
