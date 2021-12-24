@@ -48,8 +48,8 @@ class AnalysisServerClient {
     handler = _Handler(server);
   }
 
-  Future<void> start() async {
-    await server.start();
+  Future<void> start({String? sdkPath, String? serverPath}) async {
+    await server.start(sdkPath: sdkPath, serverPath: serverPath);
     server.listenToOutput(notificationProcessor: handler.handleEvent);
     if (!await handler.serverConnected(timeLimit: const Duration(seconds: 15))) {
       throw TimeoutException('could not connect to the server after 15 seconds');

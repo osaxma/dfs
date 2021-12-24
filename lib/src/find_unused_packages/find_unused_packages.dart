@@ -91,7 +91,7 @@ class _CollectImportsVisitor extends RecursiveAstVisitor {
   @override
   visitImportDirective(ImportDirective node) {
     final uri = node.uri.stringValue;
-    print('IMPORT URI = ${node.uri.stringValue}');
+    logger.trace('IMPORT URI = ${node.uri.stringValue}');
     if (uri != null) {
       final packageName = extractPackageNameFromImportUri(uri);
       if (packageName != null) {

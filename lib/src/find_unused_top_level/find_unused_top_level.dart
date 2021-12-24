@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:analysis_server_client/protocol.dart';
 import 'package:cli_util/cli_logging.dart';
 import 'package:dfs/src/analysis_server/client.dart';
-import 'package:path/path.dart' as p;
 
 import 'dart:io';
 
