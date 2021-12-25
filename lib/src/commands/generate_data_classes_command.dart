@@ -29,6 +29,7 @@ class GenerateDataClassesCommand extends DFSCommand {
 
     if (results.succeeded.isNotEmpty) {
       logger.stdout('Data classes were generated for the following files:');
+
       results.succeeded.forEach((element) {
         logger.stdout('   - ${p.basename(element.path)}');
       });

@@ -1,15 +1,9 @@
 import 'dart:io';
 
-import 'package:cli_util/cli_util.dart';
 import 'package:dfs/dfs.dart' as dfs;
 import 'package:dfs/src/analysis_server/client.dart';
-import 'package:dfs/src/common/io_utils.dart';
 
 void main(List<String> arguments) async {
-  print('executable ${Platform.executable}');
-  print('resolvedExecutable ${Platform.resolvedExecutable}');
-  print('resolvedExecutable ${getSdkPath()}');
-  print('findSdkPath: ${findSdkPath()}');
   try {
     await dfs.DFSCommandRunner().run(arguments);
   } catch (err) {

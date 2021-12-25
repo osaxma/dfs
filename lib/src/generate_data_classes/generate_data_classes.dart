@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import "package:dart_style/dart_style.dart"; // for formatting the generated code
+import 'package:dart_style/dart_style.dart'; // for formatting the generated code
 import 'package:analyzer/dart/ast/ast.dart' hide Expression; // for AST types
 import 'package:analyzer/dart/ast/visitor.dart'; // for building AST visitors
 import 'package:built_collection/built_collection.dart'; // for buildng parts as a list (constructors, parameters, etc.)
@@ -32,7 +32,7 @@ class DataClassGenerator {
     bool eagerError = false,
     String filesEndWith = '_data.dart',
   ]) async {
-    final targetFiles = await findAllDartFiles(directory, endsWith: filesEndWith);
+    final targetFiles = await findAllDartFiles(directory, endsWith: filesEndWith, subDirectory: 'samples');
 
     final res = DataClassGeneratorResult();
     for (final file in targetFiles) {
@@ -88,8 +88,8 @@ class _Generator {
   // or maybe we should keep them in some sort of a map since after we loop through
   // the classes, we need to replace them in the file.
   // or create our own object
-  late ClassDeclaration clazz;
-  final extractedParameters = <_ExtractedParameter>[];
+  late ClassDeclaration currentClazz;
+  final currentExtractedParameters = <_ExtractedParameter>[];
 
   // TODO: in the class visitor, check if any of the two are already imported
   //       and make these true.
@@ -103,10 +103,12 @@ class _Generator {
     required this.emitter,
   });
 
-  Future<void> generate() async {
-    final ast = generateASTfromFile(file);
+  // Generates and returns the data classes for a file
+  Future<String> generate() async {
+    final source = await file.readAsString();
+    final ast = generateASTfromSource(source);
     final classVisitor = _ClassesCollectorVisitor();
-    // get all the classes
+    // get all the classes that can be converted into data class (non-abstract for now)
     final List<ClassDeclaration> classes = classVisitor.classes;
     // visit all the classes and class visitor willl accumulate them
     ast.visitChildren(classVisitor);
@@ -114,38 +116,71 @@ class _Generator {
     dartConvertIsImported = classVisitor.dartConvertIsImported;
     collectionPackageIsImported = classVisitor.collectionPackageIsImported;
 
-    final dataClasses = <String>[];
+    final dataClasses = <Class>[];
     // use it to format the generated code
     final formatter = DartFormatter(pageWidth: 120);
-    for (var c in classes) {
+    // replace classes from bottom to top so the offsets for the classes at the top remain valid.
+    // TODO: confirm if the AST visitor is visiting classes from top to bottom and if so, then use classes.reversed
+    classes.sort((c1, c2) => c2.offset.compareTo(c1.offset));
+    for (var clazz in classes) {
       // temp: see comment above clazz definition
-      clazz = c;
-      extractedParameters.clear();
-      extractedParameters.addAll(_ExtractedParameter.extractParameters(clazz));
+      currentClazz = clazz;
+      currentExtractedParameters.clear();
+      currentExtractedParameters.addAll(_ExtractedParameter.extractParameters(currentClazz));
       final dataClass = generateDataClass();
-      final source = generateSourceFromSingleClass(dataClass);
-      final formattedSource = formatter.format(source);
-      dataClasses.add(formattedSource);
-      print(formattedSource);
+      dataClasses.add(dataClass);
     }
-    // final addCollectionImport = classVisitor.collectionExists;
-    // TODO: replace the classes in the old source with the newly created dataClasses
+
+    assert(dataClasses.length == classes.length);
+
+    String newSource = source;
+    for (var i = 0; i < dataClasses.length; i++) {
+      newSource = replaceClassWithDataClass(newSource, dataClasses[i], classes[i]);
+    }
+
+    if (!dartConvertIsImported) {
+      // TODO: check if it's needed first (i.e. if serialization is not included)
+      newSource = "import 'dart:convert';\n" + newSource;
+    }
+
+    if (!collectionPackageIsImported && classVisitor.collectionExists) {
+      // TODO: check if it's needed first (i.e. if deepEquality is needed).
+      newSource = "import 'package:collection/collection.dart';\n" + newSource;
+    }
+
+    final formattedSource = formatter.format(newSource);
+    // TODO:  this is temp -- move to the caller
+    final newPath = file.path.replaceFirst('.dart', '.g.dart');
+    final newFile = File(newPath);
+    await newFile.writeAsString(formattedSource);
+    return formattedSource;
   }
 
+  String replaceClassWithDataClass(String source, Class dataClass, ClassDeclaration clazz) {
+    final start = clazz.offset;
+    final end = start + clazz.length;
+    final dataClassSource = generateSourceFromSingleClass(dataClass);
+    source = source.replaceRange(start, end, dataClassSource);
+    return source;
+  }
 
- // TODO: move the functions below to _GeneratorData and make them such as:
- // _GeneratorData.getFields
- // _GeneratorData.getCopyWith
- // _GeneratorData.getEtc.
+  // TODO: move the functions below to _GeneratorData and make them such as:
+  // _GeneratorData.getFields
+  // _GeneratorData.getCopyWith
+  // _GeneratorData.getEtc.
 /* -------------------------------------------------------------------------- */
 /*                                    TODOS                                   */
 /* -------------------------------------------------------------------------- */
-// TODO: wrap all the functions in a class or classes as applicable
+// TODO: wrap all the functions in a class or classes as applicable (already done but not ideal -- improve)
 // TODO: handle toMap/fromMap for collections with Generic Custom Types e.g. List<Employees>
 // TODO: handle deep equality for collections e.g. collectionEquals(other.list, list)
 // TODO: include 'dart:convert' (for json.decode/encode) in generated code when serialization is generated
 // TODO: include 'package:collection/collection.dart' import when using deep equality.
 // TODO: replace classes in parsed source with generated data classes and put it into a new source.
+// TODO: exclude private variables, setters/getters but preserve them in generated code.
+// TODO: treat initialized fields (non-const) as fields with default value (remove initialization)
+//       and if the user wants to include initialized fields, they should use getters instead or const.
+//       This will prevent using any sort of annotations
 
 /* -------------------------------------------------------------------------- */
 /*                                    BASE                                    */
@@ -154,7 +189,8 @@ class _Generator {
   Class generateDataClass() {
     final clazzBuilder = ClassBuilder();
     clazzBuilder
-      ..name = clazz.name.name
+      ..name = currentClazz.name.name
+      ..docs = ListBuilder<String>(getDocComments(currentClazz.documentationComment))
       ..constructors = buildConstructors()
       ..fields = buildClassFields()
       ..methods = buildMethods();
@@ -186,13 +222,14 @@ class _Generator {
 // final List<String> hobbies;
   ListBuilder<Field> buildClassFields() {
     final fields = <Field>[];
-    for (var param in extractedParameters) {
+    for (var param in currentExtractedParameters) {
       final assignment = param.assignment != null ? Code(param.assignment!) : null;
       fields.add(Field((b) {
         b
           ..name = param.name
           ..modifier = FieldModifier.final$
           ..assignment = assignment
+          ..docs = ListBuilder<String>(param.documentationComment)
           ..type = param.typeRef;
       }));
     }
@@ -240,7 +277,7 @@ class _Generator {
 
   ListBuilder<Parameter> buildConstructorNamedParameters() {
     final namedParameters = <Parameter>[];
-    extractedParameters.forEach((param) {
+    currentExtractedParameters.forEach((param) {
       if (param.isInitialized) return;
       namedParameters.add(
         Parameter(
@@ -272,7 +309,7 @@ class _Generator {
 // TODO: include import 'dart:convert';
 //  factory Person.fromJson(String source) => Person.fromMap(json.decode(source));
   Constructor buildFromJsonConstructor() {
-    final name = clazz.name.name;
+    final name = currentClazz.name.name;
     return Constructor((b) {
       b
         ..name = 'fromJson'
@@ -318,11 +355,11 @@ class _Generator {
   }
 
   Code generateFromMapConstructorBody() {
-    final body = extractedParameters
+    final body = currentExtractedParameters
         .where((p) => !p.isInitialized)
         .map(buildFromMapField)
         .reduce((value, element) => value + ',' + element);
-    return Code('return ${clazz.name.name}($body,);');
+    return Code('return ${currentClazz.name.name}($body,);');
   }
 
   String buildFromMapField(_ExtractedParameter param) {
@@ -394,7 +431,7 @@ class _Generator {
   }
 
   Code generateToMapMethodBody() {
-    final body = extractedParameters
+    final body = currentExtractedParameters
         .where((p) => !p.isInitialized)
         .map(buildToMapField)
         .reduce((value, element) => value + ',' + element);
@@ -473,7 +510,7 @@ class _Generator {
   Method generateCopyWithMethod() {
     final copyWithMethod = Method((b) {
       b
-        ..returns = refer(clazz.name.name)
+        ..returns = refer(currentClazz.name.name)
         ..name = 'copyWith'
         ..body = generateCopyWithBody()
         ..optionalParameters = generateCopyWithMethodParameters();
@@ -486,7 +523,7 @@ class _Generator {
     final parameters = <Parameter>[];
 
     parameters.addAll(
-      extractedParameters.where((p) => !p.isInitialized).map(
+      currentExtractedParameters.where((p) => !p.isInitialized).map(
             (p) => Parameter(
               (b) {
                 b
@@ -507,11 +544,11 @@ class _Generator {
   }
 
   Code generateCopyWithBody() {
-    final body = extractedParameters
+    final body = currentExtractedParameters
         .where((p) => !p.isInitialized)
         .map((p) => '${p.name}: ${p.name} ?? this.${p.name}')
         .reduce((value, element) => value + ',' + element);
-    return Code('return ${clazz.name.name}($body,);');
+    return Code('return ${currentClazz.name.name}($body,);');
   }
 
 /* -------------------------------------------------------------------------- */
@@ -546,9 +583,10 @@ class _Generator {
   }
 
   Code generateEqualityOperatorBody() {
-    final className = clazz.name.name;
-    final fields =
-        extractedParameters.map((p) => 'other.${p.name} == ${p.name}').reduce((prev, next) => prev + '&&' + next);
+    final className = currentClazz.name.name;
+    final fields = currentExtractedParameters
+        .map((p) => 'other.${p.name} == ${p.name}')
+        .reduce((prev, next) => prev + '&&' + next);
     return Code('''
   if (identical(this, other)) return true;
   // TODO: handle list equality here 
@@ -561,7 +599,8 @@ class _Generator {
 //   return name.hashCode ^ nickname.hashCode ^ age.hashCode ^ height.hashCode ^ hobbies.hashCode;
 // }
   Method generateHashCodeGetter() {
-    final fields = extractedParameters.map((p) => '${p.name}.hashCode').reduce((prev, next) => prev + '^' + next);
+    final fields =
+        currentExtractedParameters.map((p) => '${p.name}.hashCode').reduce((prev, next) => prev + '^' + next);
     return Method((b) {
       b
         ..name = 'hashCode'
@@ -581,9 +620,9 @@ class _Generator {
 //   return 'Person(name: $name, nickname: $nickname, age: $age, height: $height, hobbies: $hobbies)';
 // }
   Method generateToStringMethod() {
-    final className = clazz.name.name;
+    final className = currentClazz.name.name;
     final fields =
-        extractedParameters.map((p) => p.name + ': ' '\$${p.name}').reduce((prev, next) => prev + ', ' + next);
+        currentExtractedParameters.map((p) => p.name + ': ' '\$${p.name}').reduce((prev, next) => prev + ', ' + next);
     return Method((b) {
       b
         ..name = 'toString'
@@ -700,12 +739,13 @@ class _ExtractedParameter {
   final String symbol;
   final Reference typeRef;
   final String? assignment;
-
+  final Iterable<String> documentationComment;
   _ExtractedParameter({
     required this.name,
     required this.isNullable,
     required this.isInitialized,
     required this.symbol,
+    required this.documentationComment, // = const <String>[],
     this.assignment,
   }) : typeRef = refer(symbol);
 
@@ -715,14 +755,17 @@ class _ExtractedParameter {
     final parameters = <_ExtractedParameter>[];
     for (var member in clazz.members.whereType<FieldDeclaration>()) {
       // this applies to all variables
-      final type = member.fields.type?.toSource() ?? 'dynamic';
+      final type = member.fields.type?.toString() ?? 'dynamic';
       final isNullable = member.fields.type?.question != null || type == 'dynamic';
+      final documentationComment = getDocComments(member.documentationComment);
+
       // note: member.fields.variables is a List since once can define multiple variables within the same declaration
       //       such as: `final int x, y, z;` or `final int x = 0, y = 1, z = 3;`
       for (var variable in member.fields.variables) {
         final name = variable.name.name;
         final isInitialized = variable.initializer != null;
         final assignment = isInitialized ? variable.initializer!.toSource() : null;
+
         parameters.add(
           _ExtractedParameter(
             name: name,
@@ -730,6 +773,7 @@ class _ExtractedParameter {
             isInitialized: isInitialized,
             symbol: type,
             assignment: assignment,
+            documentationComment: documentationComment,
           ),
         );
       }
@@ -750,3 +794,11 @@ String removeGenericsFromType(String string) {
 
 const _dartConvertImportUri = "dart:convert";
 const _collectionImportUri = "package:collection/collection.dart";
+
+Iterable<String> getDocComments(Comment? comment) {
+  if (comment != null && comment.isDocumentation && comment.tokens.isNotEmpty) {
+    return comment.tokens.map((t) => t.toString());
+  } else {
+    return const <String>[];
+  }
+}

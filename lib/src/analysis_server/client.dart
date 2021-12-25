@@ -12,6 +12,7 @@ import 'package:path/path.dart' as p;
 // TODO: make sure there's only one server during the life time of an application
 // TODO: make sure the process of the analysis server is closed when the app exits
 // TODO: figure out if we can tap into an existing server or if analysis_server_client already does it.
+// TODO: provide the correct dartBinary to support executable (see: https://github.com/dart-lang/sdk/pull/48016)
 class AnalysisServerClient {
   final void Function(Object error) onServerError;
   late String targetDir;
@@ -49,6 +50,7 @@ class AnalysisServerClient {
   }
 
   Future<void> start({String? sdkPath, String? serverPath}) async {
+    // this will throw if the server has already started
     await server.start(sdkPath: sdkPath, serverPath: serverPath);
     server.listenToOutput(notificationProcessor: handler.handleEvent);
     if (!await handler.serverConnected(timeLimit: const Duration(seconds: 15))) {

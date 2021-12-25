@@ -12,7 +12,7 @@ import 'exceptions.dart';
 /// On the other hand, when compiling an app to an executable (e.g. dfs.exe), they'll return the `dfs.exe` path.
 /// The same applies to `getSdkPath` from `cli_util` package.
 ///
-/// To get the correct path, we'll just access the OS PATH.
+/// To get the correct path, $PATH form the OS environment vairables will be used to find the dart-sdk.
 /// dart-sdk/bin/dart
 String findSdkPath() {
   final env = Platform.environment;

@@ -24,6 +24,13 @@
             "type": "dart",
             "program": "bin/dfs.dart",
             "args": ["futl"]
+        },
+        {
+            "name": "dfs - gdc",
+            "request": "launch",
+            "type": "dart",
+            "program": "bin/dfs.dart",
+            "args": ["gdc"]
         }
     ]
 }

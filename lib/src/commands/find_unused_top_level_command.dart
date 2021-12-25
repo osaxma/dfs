@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dfs/src/analysis_server/client.dart';
-import 'package:dfs/src/common/io_utils.dart';
 import 'package:dfs/src/find_unused_top_level/find_unused_top_level.dart';
 
 import 'base.dart';
@@ -24,7 +23,7 @@ class FindUnusedTopLevelCommand extends DFSCommand {
     final server = AnalysisServerClient(Directory.current, (e) {
       print('listening to server errors: $e');
     });
-    await server.start(serverPath: '');
+    await server.start();
     final progress = logger.progress('finding unused top level declarations');
     // ignore: unused_local_variable
     final unusedTopLevel = await UnusedTopLevelFinder(
