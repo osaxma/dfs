@@ -105,24 +105,15 @@ Each `<script-command>` is shown below under the available scripts.
     ```yaml
         script:
             build: flutter pub run build_runner build --delete-conflicting-outputs
-        data:
-            dfs generate-data-classes --endsWith="_data.dart" --directory="lib"
+            data: dfs generate-data-classes --endsWith="_data.dart" --directory="lib"
     ```
+    ---
 
-
-
-
-<!-- ----------------------------------------------------------------------- -->
-<!--                                  IDEAS                                  -->
-<!-- ----------------------------------------------------------------------- -->
-
-
-
-<!-- 
 - **Get Packages For All** *(status: TBD)*<br>
     >**Area**: utility<br>
     **command**: TBD <br>
     **alias:** TBD 
+    <!-- The script should find all `pubspec.yaml` files recursively in the cwd.  -->
 
     ```
     [~/cwd] dfs get packages --all
@@ -132,14 +123,14 @@ Each `<script-command>` is shown below under the available scripts.
     [~/cwd] dfs get all
     ``` 
 
-For monorepo or a repo with multiple packages. 
+    Run `dart pub get` or `flutter packages get` for all packages within a monorepo or a repo with multiple packages.
 
-Use case: This was a pain when cloning a monorepo. I had this issue when I cloned `gql` which has a dozen of pacakges within the same repo. 
 
-The script should find all `pubspec.yaml` files recursively in the cwd. 
 
--->
 
+<!-- ----------------------------------------------------------------------- -->
+<!--                                  IDEAS                                  -->
+<!-- ----------------------------------------------------------------------- -->
 
 <!-- 
  **Generate Analytical Report** *(status: TBD)*<br>
@@ -155,11 +146,9 @@ The script should find all `pubspec.yaml` files recursively in the cwd.
             https://pub.dev/packages/directed_graph
  -->
 
-
 <!-- ----------------------------------------------------------------------- -->
 <!--                                  NOTES                                  -->
 <!-- ----------------------------------------------------------------------- -->
-
 
 <!-- 
 TODO: add motivation section:
