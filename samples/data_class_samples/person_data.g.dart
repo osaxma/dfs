@@ -18,8 +18,6 @@ class Person {
     required this.age,
     required this.height,
     required this.hobbies,
-    required this.one,
-    this.two,
   });
 
   factory Person.fromMap(Map<String, dynamic> map) {
@@ -29,8 +27,6 @@ class Person {
       age: map['age'].toInt(),
       height: map['height'].toDouble(),
       hobbies: List.from(map['hobbies']?.map((x) => Hobby.fromMap(x)) ?? []),
-      one: List.from(map['one']),
-      two: map['two'] == null ? null : List.from(map['two']),
     );
   }
 
@@ -48,18 +44,12 @@ class Person {
 
   final List<Hobby> hobbies;
 
-  final List<String?> one;
-
-  final List<String?>? two;
-
   Person copyWith({
     String? name,
     String? nickname,
     int? age,
     double? height,
     List<Hobby>? hobbies,
-    List<String?>? one,
-    List<String?>? two,
   }) {
     return Person(
       name: name ?? this.name,
@@ -67,8 +57,6 @@ class Person {
       age: age ?? this.age,
       height: height ?? this.height,
       hobbies: hobbies ?? this.hobbies,
-      one: one ?? this.one,
-      two: two ?? this.two,
     );
   }
 
@@ -80,8 +68,6 @@ class Person {
       'age': age,
       'height': height,
       'hobbies': hobbies.map((x) => x.toMap()),
-      'one': one,
-      'two': two,
     };
   }
 
@@ -95,24 +81,16 @@ class Person {
         other.nickname == nickname &&
         other.age == age &&
         other.height == height &&
-        collectionEquals(other.hobbies, hobbies) &&
-        collectionEquals(other.one, one) &&
-        collectionEquals(other.two, two);
+        collectionEquals(other.hobbies, hobbies);
   }
 
   @override
   int get hashCode {
-    return name.hashCode ^
-        nickname.hashCode ^
-        age.hashCode ^
-        height.hashCode ^
-        hobbies.hashCode ^
-        one.hashCode ^
-        two.hashCode;
+    return name.hashCode ^ nickname.hashCode ^ age.hashCode ^ height.hashCode ^ hobbies.hashCode;
   }
 
   @override
   String toString() {
-    return 'Person(name: $name, nickname: $nickname, age: $age, height: $height, hobbies: $hobbies, one: $one, two: $two)';
+    return 'Person(name: $name, nickname: $nickname, age: $age, height: $height, hobbies: $hobbies)';
   }
 }

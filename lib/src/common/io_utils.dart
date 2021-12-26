@@ -32,14 +32,13 @@ String findSdkPath() {
   }
 }
 
-
 // This will look for dart-sdk/bin/dart/analysis_server.dart.snapshot
 // In command line it'll be:
-// `dart analysis_server.dart.snapshot [arguments]` 
+// `dart analysis_server.dart.snapshot [arguments]`
 // This is similar to calling:
 // `dart language-server --protocol=analyzer [arguments]` (lsp is default for `language-server`)
 //
-// TODO: what if `analysis_server.dart.snapshot` does not exist? 
+// TODO: what if `analysis_server.dart.snapshot` does not exist?
 String getServerPath() {
   final sdkPath = findSdkPath();
   // see: sdk/pkg/analysis_server_client/lib/server.dart
@@ -70,25 +69,15 @@ class DartSdkNotFoundException implements Exception {
 /// Get all dart files from the lib directory
 Future<List<File>> findAllDartFiles(
   Directory targetDirectory, {
-  String subDirectory = 'lib',
   String? endsWith,
 }) async {
-  final lister = targetDirectory.list(recursive: false);
-  late final Directory libDirectory;
-  try {
-    libDirectory = await lister
-        .where((f) => f is Directory)
-        .firstWhere((element) => p.basename(element.path) == subDirectory) as Directory;
-  } on StateError {
+  if (!targetDirectory.existsSync()) {
     throw DirectoryNotFoundException(
       path: targetDirectory.path,
-      notFoundDirectory: subDirectory,
     );
-  } catch (e) {
-    rethrow;
   }
 
-  return libDirectory
+  return targetDirectory
       .listSync(recursive: true)
       .whereType<File>()
       .where((element) => p.extension(element.path) == '.dart')

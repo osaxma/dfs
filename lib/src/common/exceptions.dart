@@ -21,16 +21,14 @@ class FileNotFoundError implements DFSException {
 class DirectoryNotFoundException implements DFSException {
   /// The path where the directory was not found
   final String path;
-  final String notFoundDirectory;
 
   const DirectoryNotFoundException({
     required this.path,
-    required this.notFoundDirectory,
   });
 
   @override
   String toString() {
     // TODO: implement toString
-    return 'no `$notFoundDirectory` directory was found in this directory: $path';
+    return 'The following directory does not exist: $path';
   }
 }

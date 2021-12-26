@@ -26,6 +26,7 @@ dependencies:
       url: git://github.com/dart-lang/sdk.git
       ref: stable
       path: pkg/analysis_server_client
+  git: ^2.0.0
 
 dev_dependencies:
   lints: ^1.0.0

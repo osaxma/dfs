@@ -12,11 +12,13 @@ import 'package:path/path.dart' as p;
 
 class DataClassGenerator {
   final Logger logger;
-  final Directory directory;
+  final Directory targetDirectory;
+  final String filesEndsWith;
 
   DataClassGenerator({
     required this.logger,
-    required this.directory,
+    required this.targetDirectory,
+    required this.filesEndsWith,
   });
 
   // TODO: let the user pass an options for:
@@ -30,9 +32,8 @@ class DataClassGenerator {
   // if `false` (default), it'll continute for the rest of the files.
   Future<DataClassGeneratorResult> generate([
     bool eagerError = false,
-    String filesEndWith = '_data.dart',
   ]) async {
-    final targetFiles = await findAllDartFiles(directory, endsWith: filesEndWith, subDirectory: 'samples');
+    final targetFiles = await findAllDartFiles(targetDirectory, endsWith: filesEndsWith);
 
     final res = DataClassGeneratorResult();
     for (final file in targetFiles) {
