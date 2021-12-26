@@ -55,8 +55,7 @@ class GenerateDataClassesCommand extends DFSCommand {
       'keep',
       abbr: 'k',
       defaultsTo: false,
-      hide: true,
-      help: 'keep the old file (it will be modified to filename.old.dart) -- (flag is not effective yet)',
+      help: 'keep the old file (it will be modified to filename.old.dart)',
     );
 
     // for debugging purposes
@@ -91,18 +90,20 @@ Examples:
 
   @override
   FutureOr<void>? run() async {
-    // TODO: improve the check here to check only for uncommited changes in the target directory 
+    // TODO: improve the check here to check only for uncommited changes in the target directory
     final yes = argResults!['yes'] as bool;
     if (!yes && !await shouldContinue(Directory.current)) {
       return;
     }
     final dataClassesDirectory = argResults!['directory'] as String;
     final fileEndings = argResults!['endsWith'] as String;
+    final keepOld = argResults!['keep'] as bool;
 
     final results = await DataClassGenerator(
       targetDirectory: Directory(p.join(Directory.current.path, dataClassesDirectory)),
       logger: logger,
       filesEndsWith: fileEndings,
+      keepOld: keepOld,
     ).generate();
 
     if (results.succeeded.isNotEmpty) {

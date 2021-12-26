@@ -14,11 +14,13 @@ class DataClassGenerator {
   final Logger logger;
   final Directory targetDirectory;
   final String filesEndsWith;
+  final bool keepOld;
 
   DataClassGenerator({
     required this.logger,
     required this.targetDirectory,
     required this.filesEndsWith,
+    this.keepOld = false,
   });
 
   // TODO: let the user pass an options for:
@@ -49,10 +51,14 @@ class DataClassGenerator {
       try {
         final newSource = await generator.generate();
         res.succeeded.add(file);
-        // TODO:  this is temp -- move to the caller
-        // final newPath = file.path.replaceFirst('.dart', '.g.dart');
-        // final newFile = File(newPath);
-        await file.writeAsString(newSource);
+
+        if (keepOld) {
+          final newPath = file.path.replaceAll('.dart', '.old.dart');
+          file.renameSync(newPath);
+        }
+        final newPath = file.path;
+        final newFile = File(newPath);
+        await newFile.writeAsString(newSource);
       } catch (e) {
         logger.stderr('could not generate data class for $basename due to the following exception:\n$e');
         res.failed.add(file);
@@ -848,7 +854,6 @@ List<String> getTypeArguments(TypeAnnotation? type) {
     }
   }
 
-  // this will return the entire type with '?' and typeArguments if they exist
   return const [];
 }
 
