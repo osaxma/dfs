@@ -26,10 +26,10 @@ class FindUnusedPackagesCommand extends DFSCommand {
       logger: logger,
     ).find();
 
-    logger.stdout('The following packages are not used anywhere in the lib directory. If they are used');
-    logger.stdout('elsewhere (e.g. /test), consider moving them to `dev_dependencies` in `pubspec.yaml`');
+    logger.stdout('The following packages are not used anywhere in the lib directory:');
     unusedPackages.forEach((element) {
       logger.stdout('   - $element');
     });
+    logger.stdout('\nIf they are used, elsewhere (e.g. /test), consider moving them to `dev_dependencies` in `pubspec.yaml`');
   }
 }

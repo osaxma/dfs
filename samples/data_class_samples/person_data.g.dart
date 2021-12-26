@@ -1,5 +1,5 @@
-import 'package:collection/collection.dart';
 import 'dart:convert';
+import 'package:collection/collection.dart';
 
 abstract class Hobby {
   Map<String, dynamic> toMap();
@@ -72,11 +72,6 @@ class Person {
   }
 
   @override
-  String toString() {
-    return 'Person(name: $name, nickname: $nickname, age: $age, height: $height, hobbies: $hobbies)';
-  }
-
-  @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     // TODO: handle list equality here
@@ -91,5 +86,10 @@ class Person {
   @override
   int get hashCode {
     return name.hashCode ^ nickname.hashCode ^ age.hashCode ^ height.hashCode ^ hobbies.hashCode;
+  }
+
+  @override
+  String toString() {
+    return 'Person(name: $name, nickname: $nickname, age: $age, height: $height, hobbies: $hobbies)';
   }
 }
