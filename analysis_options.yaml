@@ -21,7 +21,7 @@ linter:
 
 analyzer:
   exclude:
-    - samples/data_class_samples/person_data.dart
+    - samples/data_class_samples/input_example_data.dart
 
 # For more information about the core and recommended set of lints, see
 # https://dart.dev/go/core-lints

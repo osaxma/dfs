@@ -53,7 +53,22 @@ class GenerateDataClassesCommand extends DFSCommand {
       defaultsTo: false,
       help: 'keep the old file (it will be modified to filename.old.dart) -- (flag is not effective yet)',
     );
+
+    // for debugging purposes
+    argParser.addFlag(
+      'separate',
+      abbr: 'g',
+      defaultsTo: false,
+      hide: true,
+      help: 'generate the data class in a separate file with `g.dart` ending',
+    );
   }
+
+  @override
+  String get usage => super.usage;
+
+  @override
+  String? get usageFooter => super.usageFooter;
 
   @override
   final String name = 'generate-data-classes';
@@ -62,7 +77,12 @@ class GenerateDataClassesCommand extends DFSCommand {
   final List<String> aliases = ['gdc'];
 
   @override
-  final String description = 'Generate Data Classes for a specific directory and specific file name ending';
+  final String description = '''Generate Data Classes for a specific directory and specific file name ending
+  
+Examples: 
+  # generate data classes in the lib/src/data folder
+  dfs gdc -d lib/src/data
+  ''';
 
   @override
   FutureOr<void>? run() async {

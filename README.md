@@ -20,12 +20,12 @@ To run any script:
 
 Each `<script-command>` is shown below under the available scripts.  
 
-## Available Scripts 
+# Available Scripts 
 
 <!-- TODO: move each scripts details in a different readme and keep it simple here -->
 <!-- TODO: Make each script a stand-alone package within the project so it's useable elsewhere? -->
 
-- **Find Unused Packages** *(status: MVP is working)* <br>
+- **Find Unused Packages** *(status: MVP)* <br>
     >**Area:** project hygien<br>
     **command**: ```find-unused-packages``` <br>
     **alias:** `fup`
@@ -49,7 +49,7 @@ Each `<script-command>` is shown below under the available scripts.
     
     Use case: keep the project clean and avoid confusing myself.
 
-
+    ---
 - **Find Unused Top Level Declaration** *(status: MVP)*<br>
     >**Area**: project hygiene<br>
     **command**: `find-unused-top-level` <br>
@@ -65,30 +65,49 @@ Each `<script-command>` is shown below under the available scripts.
             - /cwd/lib/src/version.dart:7:7
             - /cwd/lib/src/common/ast_utils.dart:7:9
     ```
-
-## WIP Scripts
-- **Generate Data Classes** *(status: WIP)*<br>
+     ---
+- **Generate Data Classes** *(status: MVP)*<br>
     >**Area**: utility<br>
     **command**: `generate-data-classes` <br>
     **alias:** `gdc`
 
-    Use case: I don't like magically generated undebuggable code. I currently use `Dart Data Class Generator` extension in VS code which modifies the code in place to generate the following:
+    Generate the following for an existing class (in place):
     - `copyWith` method.
     - serialization methods (`toMap`/`toJson`) and desirialization factories (`fromMap`/`fromJson`). 
-    - Equality (`operator ==`) and `hashcode`. 
+    - Equality (`operator ==`) and `hashcode`. <br><br>
 
-    Generated code looks clean and tidy but the extension does few things different than I like (e.g. handling default values and some other minor details). 
+    See how the data looks like before and after running the script at:
+    - [before running the script](samples/data_class_samples/input_example_data.dart)
+    - [after running the script](samples/data_class_samples/output_data_example.dart)
+    
+    <br> 
+
+    The input data is read by parsing the Abstract Syntax Tree (AST) using the [`analyzer package`](https://github.com/dart-lang/sdk/tree/main/pkg/analyzer), and then the data class is built using the [`code builder package`](https://github.com/dart-lang/code_builder). 
 
 
-
-
-## Ideas for future scripts
+# Ideas for future scripts
 - **Change Project Name** *(status: TBD)*<br>
     >**Area**: pain<br>
     **command**: TBD <br>
     **alias:** TBD
     <!-- This may should take the flutter version into account -->
     This is mainly for Flutter, and especially for multiplatform code where the name has to be changed in various places. 
+
+    ---
+- **Run Script** *(status: TBD)*<br>
+    >**Area**: utility<br>
+    **command**: run <br>
+    **alias:** N/A
+    ```
+    [~/cwd] dfs run <script> 
+    ```
+    Where \<script> is defined in `pubspec.yaml` 
+    ```yaml
+        script:
+            build: flutter pub run build_runner build --delete-conflicting-outputs
+        data:
+            dfs generate-data-classes --endsWith="_data.dart" --directory="lib"
+    ```
 
 
 
@@ -97,24 +116,6 @@ Each `<script-command>` is shown below under the available scripts.
 <!--                                  IDEAS                                  -->
 <!-- ----------------------------------------------------------------------- -->
 
-<!-- 
-- **Run Script** *(status: TBD)*<br>
-    >**Area**: utility<br>
-    **command**: run <br>
-    **alias:** N/A
-    ```
-    [~/cwd] dfs run <script> 
-    ```
-    Where <script> is defined in `pubspec.yaml` 
-    ```yaml
-        script:
-            build: flutter pub run build_runner build --delete-conflicting-outputs
-        data:
-            dfs generate-data-classes --endsWith="_data.dart" --directory="lib"
-    ```
-
-    This is similar to `derry` package but it doesn't look like that it has been maintained for a while
--->
 
 
 <!-- 
