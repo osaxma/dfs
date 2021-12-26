@@ -381,60 +381,10 @@ class _DataClass {
 
   Code generateFromMapConstructorBody() {
     final body = extractedParameters
-        .where((p) => !p.isInitialized)
-        .map(buildFromMapField)
+        .where((p) => !p.isInitialized && !p.isPrivate)
+        .map((p) => p.fromMapArgumentAndAssignmentString)
         .reduce((value, element) => value + ',' + element);
     return Code('return ${clazz.name.name}($body,);');
-  }
-
-  String buildFromMapField(_ExtractedParameter param) {
-    final symbol = param.baseType.replaceAll('?', '');
-    // TODO: handle nested type arguments List<List<Hobby>>
-    final String? typeArgument = param.typeArgument.isNotEmpty ? param.typeArgument.first : null;
-    final fieldName = param.name;
-    String mapValue = "map['$fieldName']";
-    final nullablel = param.isNullable;
-    switch (symbol) {
-      case 'num':
-      case 'dynamic':
-      case 'bool':
-      case 'Object':
-      case 'String':
-        // do nothing e.g. map[fieldName] as is.
-        break;
-      case 'int':
-        // - int --> map['fieldName']?.toInt()       OR     int.parse(map['fieldName'])
-        mapValue = nullablel ? '$mapValue?.toInt()' : '$mapValue.toInt()';
-        break;
-      case 'double':
-        // - double --> map['fieldName']?.double()   OR     double.parse(map['fieldName'])
-        // note: dart, especially when used with web, would convert double to integer (1.0 -> 1) so account for it.
-        mapValue = nullablel ? '$mapValue?.toDouble()' : '$mapValue.toDouble()';
-        break;
-      case 'List':
-        // TODO: handle generics
-        // e.g. List<int>.from(map['employeeIDs']) or List<Employee>.from(map['employee']?.map((x) => Employee.fromMap(x))),
-        // hobbies: List<Hobby>.from(map['hobbies']?.map((x) => Hobby.fromMap(x))),
-        mapValue = nullablel ? '$mapValue == null ? null : List.from($mapValue)' : 'List.from($mapValue)';
-        break;
-      case 'Set':
-        // TODO: handle generics
-        // e.g. Set<int>.from(map['fieldName'])
-        // interests: Set<Interest>.from(map['interests']?.map((x) => Interest.fromMap(x))),
-        mapValue = nullablel ? '$mapValue == null ? null : Set.from($mapValue)' : 'Set.from($mapValue)';
-        break;
-      case 'Map':
-        // TODO: handle generics
-        // e.g. Map<int>.from(map['fieldName'])
-        // addresses: Map<String, dynamic>.from(map['addresses']),
-        mapValue = nullablel ? '$mapValue == null ? null : Map.from($mapValue)' : 'Map.from($mapValue)';
-        break;
-      default:
-        // CustomType --> CustomType.fromMap(map['fieldName'])
-        mapValue = nullablel ? '$mapValue == null ? null : $fieldName.from($mapValue)' : '$fieldName.from($mapValue)';
-        break;
-    }
-    return '$fieldName: $mapValue';
   }
 
 /* -------------------------------------------------------------------------- */
@@ -461,45 +411,10 @@ class _DataClass {
 
   Code generateToMapMethodBody() {
     final body = extractedParameters
-        .where((p) => !p.isInitialized)
-        .map(buildToMapField)
+        .where((p) => !p.isInitialized && !p.isPrivate)
+        .map((p) => p.toMapKeyAndValueString)
         .reduce((value, element) => value + ',' + element);
     return Code('return {$body,};');
-  }
-
-  String buildToMapField(_ExtractedParameter param) {
-    final symbol = param.baseType.replaceAll('?', '');
-    // TODO: handle nested type arguments List<List<Hobby>>
-    final String? typeArgument = param.typeArgument.isNotEmpty ? param.typeArgument.first.replaceAll('?', '') : null;
-    final fieldName = param.name;
-    String mapValue = fieldName;
-    final nullablel = param.isNullable;
-    switch (symbol) {
-      case 'num':
-      case 'dynamic':
-      case 'Object':
-      case 'String':
-      case 'int':
-      case 'double':
-      case 'bool':
-        // return as is 'map[fieldName]'
-        break;
-      case 'List':
-      case 'Set':
-        if (typeArgument != null && !basicTypes.contains(typeArgument)) {
-          mapValue = nullablel ? '$mapValue?.map((x) => x.toMap())' : '$mapValue.map((x) => x.toMap())';
-        }
-        break;
-      case 'Map':
-        // todo: handle generics (if the generic is a basic type accepted by json, leave as is)
-        // mapValue = nullablel ? '$mapValue == null ? null : Map.from($mapValue)' : 'Map.from($mapValue)';
-        break;
-      default:
-        mapValue = nullablel ? '$mapValue?.toMap()' : '$mapValue.toMap()';
-        break;
-    }
-
-    return "'$fieldName': $mapValue";
   }
 
 /* -------------------------------------------------------------------------- */
@@ -550,7 +465,7 @@ class _DataClass {
     final parameters = <Parameter>[];
 
     parameters.addAll(
-      extractedParameters.where((p) => !p.isInitialized).map(
+      extractedParameters.where((p) => !p.isInitialized && !p.isPrivate).map(
             (p) => Parameter(
               (b) {
                 b
@@ -572,7 +487,7 @@ class _DataClass {
 
   Code generateCopyWithBody() {
     final body = extractedParameters
-        .where((p) => !p.isInitialized)
+        .where((p) => !p.isInitialized && !p.isPrivate)
         .map((p) => '${p.name}: ${p.name} ?? this.${p.name}')
         .reduce((value, element) => value + ',' + element);
     return Code('return ${clazz.name.name}($body,);');
@@ -745,25 +660,6 @@ class _FindCollectionVisitor extends RecursiveAstVisitor {
   }
 }
 
-class _DataClassField {
-  final FieldDeclaration fieldDeclaration;
-  _DataClassField(this.fieldDeclaration);
-
-  String get name => throw UnimplementedError();
-  bool get isNullable => throw UnimplementedError();
-  bool get isInitialized => throw UnimplementedError();
-  String get symbol => throw UnimplementedError();
-  Reference get typeRef => throw UnimplementedError();
-  Reference get typeRefAsNullable => throw UnimplementedError();
-  Iterable<String> get assignment => throw UnimplementedError();
-  String get documentationComment => throw UnimplementedError();
-  bool get isCollection => symbol.startsWith(collectionReg);
-  bool get isPrivate => throw UnimplementedError();
-
-  String get toMapString => throw UnimplementedError();
-  String get fromMapString => throw UnimplementedError();
-}
-
 class _ExtractedParameter {
   final String name;
   final bool isNullable;
@@ -789,6 +685,86 @@ class _ExtractedParameter {
   Reference? get typeRefAsNullable => isNullable ? typeRef : refer(fullType + '?');
 
   bool get isCollection => baseType.startsWith(collectionReg);
+
+  bool get isPrivate => name.startsWith('_');
+
+  // TODO: handle nested type arguments List<List<Hobby>>
+  //       now this only looks at the first one.
+  String get toMapKeyAndValueString {
+    final key = name;
+    String value = name;
+
+    // handles: hobbies.map((x) => x.toMap()).toList() // where hobbies is of type List<Hobby> or Set<Hobby>
+    if (typeArgument.isNotEmpty) {
+      if (collectionTypes.contains(baseType) && !basicTypes.contains(typeArgument.first)) {
+        value = isNullable ? '$name?.map((x) => x.toMap())' : '$name.map((x) => x.toMap())';
+      }
+    }
+
+    // handles: hobby.toMap() // where hobby is of type Hobby
+    if (!collectionTypes.contains(baseType) && !basicTypes.contains(baseType)) {
+      value = isNullable ? '$name?.toMap()' : '$name.toMap()';
+    }
+
+    return "'$key':$value";
+  }
+
+  // TODO: handle nested type arguments List<List<Hobby>>
+  //       now this only looks at the first one.
+  String get fromMapArgumentAndAssignmentString {
+    final arg = name;
+    String assignment = name;
+    String mapKey = "map['$name']";
+
+    switch (baseType.replaceAll('?', '')) {
+      case 'num':
+      case 'dynamic':
+      case 'bool':
+      case 'Object':
+      case 'String':
+        assignment = mapKey;
+        break;
+      case 'int':
+        // - int --> map['fieldName']?.toInt()       OR     int.parse(map['fieldName'])
+        assignment = isNullable ? '$mapKey?.toInt()' : '$mapKey.toInt()';
+        break;
+      case 'double':
+        // - double --> map['fieldName']?.double()   OR     double.parse(map['fieldName'])
+        // note: dart, especially when used with web, would convert double to integer (1.0 -> 1) so account for it.
+        assignment = isNullable ? '$mapKey?.toDouble()' : '$mapKey.toDouble()';
+        break;
+      case 'List':
+        // handles: List<Hobby>.from(map['hobbies']?.map((x) => Hobby.fromMap(x))),
+        if (typeArgument.isNotEmpty && !basicTypes.contains(typeArgument.first)) {
+          assignment = isNullable
+              ? '$mapKey == null ? null : List.from($mapKey.map((x) => ${typeArgument.first}.fromMap(x)))'
+              : 'List.from($mapKey?.map((x) => ${typeArgument.first}.fromMap(x)) ?? [])';
+        } else {
+          assignment = isNullable ? '$mapKey == null ? null : List.from($mapKey)' : 'List.from($mapKey)';
+        }
+        break;
+      case 'Set':
+        // handles: Set<Interest>.from(map['interests']?.map((x) => Interest.fromMap(x))),
+        if (typeArgument.isNotEmpty && !basicTypes.contains(typeArgument.first)) {
+          assignment = isNullable
+              ? '$mapKey == null ? null : Set.from($mapKey.map((x) => ${typeArgument.first}.fromMap(x)))'
+              : 'Set.from($mapKey.map((x) => ${typeArgument.first}.fromMap(x)))';
+        } else {
+          assignment = isNullable ? '$mapKey == null ? null : Set.from($mapKey)' : 'Set.from($mapKey)';
+        }
+        break;
+      case 'Map':
+        // handles: Map<String, dynamic>.from(map['addresses']),
+        assignment = isNullable ? '$mapKey == null ? null : Map.from($mapKey)' : 'Map.from($mapKey)';
+
+        break;
+      default:
+        // CustomType --> CustomType.fromMap(map['fieldName'])
+        assignment = isNullable ? '$mapKey == null ? null : $name.from($mapKey)' : '$name.from($mapKey)';
+        break;
+    }
+    return '$arg: $assignment';
+  }
 
   static List<_ExtractedParameter> extractParameters(ClassDeclaration clazz) {
     final parameters = <_ExtractedParameter>[];
@@ -875,13 +851,27 @@ List<String> getTypeArguments(TypeAnnotation? type) {
   return const [];
 }
 
-const basicTypes = [
+const basicTypes = {
   'bool',
   'num',
   'int',
   'String',
   'double',
-  'List',
-  'Map',
+  'bool?',
+  'num?',
+  'int?',
+  'String?',
+  'double?',
+  'dynamic',
+  'Object',
+  'Object?'
+};
+
+const collectionTypes = {
   'Set',
-];
+  'Map',
+  'List',
+  'Set?',
+  'Map?',
+  'List?',
+};

@@ -28,7 +28,7 @@ class Person {
       nickname: map['nickname'],
       age: map['age'].toInt(),
       height: map['height'].toDouble(),
-      hobbies: List.from(map['hobbies']),
+      hobbies: List.from(map['hobbies']?.map((x) => Hobby.fromMap(x)) ?? []),
       one: List.from(map['one']),
       two: map['two'] == null ? null : List.from(map['two']),
     );
