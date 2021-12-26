@@ -74,13 +74,14 @@ class Person {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    // TODO: handle list equality here
+    final collectionEquals = const DeepCollectionEquality().equals;
+
     return other is Person &&
         other.name == name &&
         other.nickname == nickname &&
         other.age == age &&
         other.height == height &&
-        other.hobbies == hobbies;
+        collectionEquals(other.hobbies, hobbies);
   }
 
   @override
