@@ -9,6 +9,7 @@ import 'package:dfs/src/generate_data_classes/generate_data_classes.dart';
 
 import 'base.dart';
 
+// TODO: consider changing this to `Convert` since we are doing this in place.
 class GenerateDataClassesCommand extends DFSCommand {
   GenerateDataClassesCommand() {
     argParser.addOption(
@@ -29,14 +30,14 @@ class GenerateDataClassesCommand extends DFSCommand {
       'serialization',
       abbr: 's',
       defaultsTo: true,
-      help: 'Include serialization (flag is not effective yet)',
+      help: 'Include serialization -- (flag is not effective yet)',
     );
 
     argParser.addFlag(
       'copyWith',
       abbr: 'c',
       defaultsTo: true,
-      help: 'Include copyWith (flag is not effective yet)',
+      help: 'Include copyWith -- (flag is not effective yet)',
     );
 
     argParser.addFlag(
@@ -44,6 +45,13 @@ class GenerateDataClassesCommand extends DFSCommand {
       abbr: 'y',
       defaultsTo: false,
       help: 'answer yes to any prompts (e.g. checking uncommited changes, etc.)',
+    );
+
+    argParser.addFlag(
+      'keep',
+      abbr: 'k',
+      defaultsTo: false,
+      help: 'keep the old file (it will be modified to filename.old.dart) -- (flag is not effective yet)',
     );
   }
 
