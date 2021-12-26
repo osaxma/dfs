@@ -47,8 +47,12 @@ class DataClassGenerator {
       );
       // TODO: add a flag to stop on first failure and if so stop the process.
       try {
-        await generator.generate();
+        final newSource = await generator.generate();
         res.succeeded.add(file);
+        // TODO:  this is temp -- move to the caller
+        // final newPath = file.path.replaceFirst('.dart', '.g.dart');
+        // final newFile = File(newPath);
+        await file.writeAsString(newSource);
       } catch (e) {
         logger.stderr('could not generate data class for $basename due to the following exception:\n$e');
         res.failed.add(file);
@@ -151,10 +155,6 @@ class _Generator {
     }
 
     final formattedSource = formatter.format(newSource);
-    // TODO:  this is temp -- move to the caller
-    final newPath = file.path.replaceFirst('.dart', '.g.dart');
-    final newFile = File(newPath);
-    await newFile.writeAsString(formattedSource);
     return formattedSource;
   }
 

@@ -26,17 +26,21 @@ class GenerateDataClassesCommand extends DFSCommand {
       help: 'Choose a specific file name ending to generate data classes from',
     );
 
+    // TODO: implement serialization flag
     argParser.addFlag(
       'serialization',
       abbr: 's',
       defaultsTo: true,
+      hide: true,
       help: 'Include serialization -- (flag is not effective yet)',
     );
 
+    // TODO: implement copyWith flag
     argParser.addFlag(
       'copyWith',
       abbr: 'c',
       defaultsTo: true,
+      hide: true,
       help: 'Include copyWith -- (flag is not effective yet)',
     );
 
@@ -46,11 +50,12 @@ class GenerateDataClassesCommand extends DFSCommand {
       defaultsTo: false,
       help: 'answer yes to any prompts (e.g. checking uncommited changes, etc.)',
     );
-
+    // TODO: implement keep flag
     argParser.addFlag(
       'keep',
       abbr: 'k',
       defaultsTo: false,
+      hide: true,
       help: 'keep the old file (it will be modified to filename.old.dart) -- (flag is not effective yet)',
     );
 
@@ -86,6 +91,7 @@ Examples:
 
   @override
   FutureOr<void>? run() async {
+    // TODO: improve the check here to check only for uncommited changes in the target directory 
     final yes = argResults!['yes'] as bool;
     if (!yes && !await shouldContinue(Directory.current)) {
       return;
@@ -123,6 +129,7 @@ Examples:
   }
 }
 
+// TODO: move this logic to common since it'll be used by any script that modifies files.
 Future<bool> shouldContinue(Directory dir) async {
   // check if it's a git repo
   final isGit = await isGitDir(dir);
