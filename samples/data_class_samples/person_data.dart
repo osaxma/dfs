@@ -19,4 +19,6 @@ class Person {
   final int age;
   final double height;
   final List<Hobby> hobbies;
+  final List<String?> one;
+  final List<String?>? two;
 }

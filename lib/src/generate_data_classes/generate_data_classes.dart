@@ -388,8 +388,9 @@ class _DataClass {
   }
 
   String buildFromMapField(_ExtractedParameter param) {
-    // TODO: we should capture the generic for Lists and Maps
-    String symbol = removeGenericsFromType(param.symbol).replaceAll('?', '');
+    final symbol = param.baseType.replaceAll('?', '');
+    // TODO: handle nested type arguments List<List<Hobby>>
+    final String? typeArgument = param.typeArgument.isNotEmpty ? param.typeArgument.first : null;
     final fieldName = param.name;
     String mapValue = "map['$fieldName']";
     final nullablel = param.isNullable;
@@ -413,16 +414,19 @@ class _DataClass {
       case 'List':
         // TODO: handle generics
         // e.g. List<int>.from(map['employeeIDs']) or List<Employee>.from(map['employee']?.map((x) => Employee.fromMap(x))),
+        // hobbies: List<Hobby>.from(map['hobbies']?.map((x) => Hobby.fromMap(x))),
         mapValue = nullablel ? '$mapValue == null ? null : List.from($mapValue)' : 'List.from($mapValue)';
         break;
       case 'Set':
         // TODO: handle generics
         // e.g. Set<int>.from(map['fieldName'])
+        // interests: Set<Interest>.from(map['interests']?.map((x) => Interest.fromMap(x))),
         mapValue = nullablel ? '$mapValue == null ? null : Set.from($mapValue)' : 'Set.from($mapValue)';
         break;
       case 'Map':
         // TODO: handle generics
         // e.g. Map<int>.from(map['fieldName'])
+        // addresses: Map<String, dynamic>.from(map['addresses']),
         mapValue = nullablel ? '$mapValue == null ? null : Map.from($mapValue)' : 'Map.from($mapValue)';
         break;
       default:
@@ -464,8 +468,9 @@ class _DataClass {
   }
 
   String buildToMapField(_ExtractedParameter param) {
-    // TODO: we should capture the generic for Lists and Maps
-    String symbol = removeGenericsFromType(param.symbol).replaceAll('?', '');
+    final symbol = param.baseType.replaceAll('?', '');
+    // TODO: handle nested type arguments List<List<Hobby>>
+    final String? typeArgument = param.typeArgument.isNotEmpty ? param.typeArgument.first.replaceAll('?', '') : null;
     final fieldName = param.name;
     String mapValue = fieldName;
     final nullablel = param.isNullable;
@@ -480,13 +485,10 @@ class _DataClass {
         // return as is 'map[fieldName]'
         break;
       case 'List':
-        // todo: handle generics (if the generic is a basic type accepted by json, leave as is)
-        //  e.g. employees.map((x) => x.toMap()).toList(),
-        // mapValue = nullablel ? '$mapValue == null ? null : List.from($mapValue)' : 'List.from($mapValue)';
-        break;
       case 'Set':
-        // todo: handle generics (if the generic is a basic type accepted by json, leave as is)
-        // mapValue = nullablel ? '$mapValue == null ? null : Set.from($mapValue)' : 'Set.from($mapValue)';
+        if (typeArgument != null && !basicTypes.contains(typeArgument)) {
+          mapValue = nullablel ? '$mapValue?.map((x) => x.toMap())' : '$mapValue.map((x) => x.toMap())';
+        }
         break;
       case 'Map':
         // todo: handle generics (if the generic is a basic type accepted by json, leave as is)
@@ -623,7 +625,7 @@ class _DataClass {
     return Code('''
   if (identical(this, other)) return true;
   $collectionEquality
-  
+
   return other is $className && $fields;
   ''');
   }
@@ -743,33 +745,58 @@ class _FindCollectionVisitor extends RecursiveAstVisitor {
   }
 }
 
+class _DataClassField {
+  final FieldDeclaration fieldDeclaration;
+  _DataClassField(this.fieldDeclaration);
+
+  String get name => throw UnimplementedError();
+  bool get isNullable => throw UnimplementedError();
+  bool get isInitialized => throw UnimplementedError();
+  String get symbol => throw UnimplementedError();
+  Reference get typeRef => throw UnimplementedError();
+  Reference get typeRefAsNullable => throw UnimplementedError();
+  Iterable<String> get assignment => throw UnimplementedError();
+  String get documentationComment => throw UnimplementedError();
+  bool get isCollection => symbol.startsWith(collectionReg);
+  bool get isPrivate => throw UnimplementedError();
+
+  String get toMapString => throw UnimplementedError();
+  String get fromMapString => throw UnimplementedError();
+}
+
 class _ExtractedParameter {
   final String name;
   final bool isNullable;
   final bool isInitialized;
-  final String symbol;
+  final String baseType;
   final Reference typeRef;
   final String? assignment;
   final Iterable<String> documentationComment;
+  final List<String> typeArgument;
+  // the source full type used to create a type reference when building the field
+  final String fullType;
   _ExtractedParameter({
     required this.name,
     required this.isNullable,
     required this.isInitialized,
-    required this.symbol,
+    required this.baseType,
     required this.documentationComment, // = const <String>[],
+    required this.typeArgument,
     this.assignment,
-  }) : typeRef = refer(symbol);
+    required this.fullType,
+  }) : typeRef = refer(fullType);
 
-  Reference? get typeRefAsNullable => isNullable ? typeRef : refer(symbol + '?');
+  Reference? get typeRefAsNullable => isNullable ? typeRef : refer(fullType + '?');
 
-  bool get isCollection => symbol.startsWith(collectionReg);
+  bool get isCollection => baseType.startsWith(collectionReg);
 
   static List<_ExtractedParameter> extractParameters(ClassDeclaration clazz) {
     final parameters = <_ExtractedParameter>[];
     for (var member in clazz.members.whereType<FieldDeclaration>()) {
-      // this applies to all variables
-      final type = member.fields.type?.toString() ?? 'dynamic';
-      final isNullable = member.fields.type?.question != null || type == 'dynamic';
+      final fullType = member.fields.type?.toSource() ?? 'dynamic';
+      final baseType = getBaseType(member.fields.type);
+      final typeArguments = getTypeArguments(member.fields.type);
+      final isNullable = baseType.contains('?');
       final documentationComment = getDocComments(member.documentationComment);
 
       // note: member.fields.variables is a List since once can define multiple variables within the same declaration
@@ -784,9 +811,11 @@ class _ExtractedParameter {
             name: name,
             isNullable: isNullable,
             isInitialized: isInitialized,
-            symbol: type,
+            baseType: baseType,
             assignment: assignment,
             documentationComment: documentationComment,
+            typeArgument: typeArguments,
+            fullType: fullType,
           ),
         );
       }
@@ -799,12 +828,7 @@ class _ExtractedParameter {
 /*                                   GENERAL                                  */
 /* -------------------------------------------------------------------------- */
 
-final genericRegExp = RegExp(r'<.*>');
 final collectionReg = RegExp(r'List|Map|Set');
-
-String removeGenericsFromType(String string) {
-  return string.replaceAll(genericRegExp, '');
-}
 
 const _dartConvertImportUri = "dart:convert";
 const _collectionImportUri = "package:collection/collection.dart";
@@ -816,3 +840,48 @@ Iterable<String> getDocComments(Comment? comment) {
     return const <String>[];
   }
 }
+
+String getBaseType(TypeAnnotation? type) {
+  if (type == null) {
+    return "dynamic";
+  }
+
+  // TODO: check if we need to handle other types such as TypedLiteral
+  if (type is NamedType) {
+    // This does not include the '?' so we include it manually.
+    return type.name.name + (type.question == null ? '' : '?');
+  }
+
+  // this will return the entire type with '?' and typeArguments if they exist
+  return type.toSource();
+}
+
+List<String> getTypeArguments(TypeAnnotation? type) {
+  if (type == null) {
+    return const [];
+  }
+
+  // TODO: check if we need to handle other types such as TypedLiteral
+  if (type is NamedType) {
+    // This does not include the '?' so we include it manually.
+    final typeArguments = type.typeArguments;
+    if (typeArguments != null) {
+      final arguments = typeArguments.arguments;
+      return arguments.map((t) => getBaseType(t)).toList();
+    }
+  }
+
+  // this will return the entire type with '?' and typeArguments if they exist
+  return const [];
+}
+
+const basicTypes = [
+  'bool',
+  'num',
+  'int',
+  'String',
+  'double',
+  'List',
+  'Map',
+  'Set',
+];
