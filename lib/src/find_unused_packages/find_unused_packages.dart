@@ -65,6 +65,10 @@ class UnusedPackagesFinder {
   }
 
   Future<void> getAllPackagesInDartFilesFromLibFolder(Directory directory) async {
+    // TODO: examine all possible cases (e.g. `endsWith('lib/')`)
+    if (!directory.path.endsWith('lib')) {
+      directory = Directory(p.join(directory.path, 'lib'));
+    }
     final dartFiles = await findAllDartFiles(directory);
     dartFilesInLibFolder.addAll(dartFiles);
   }
