@@ -60,11 +60,18 @@ class AnalysisServerClient {
   }
 
   Future<void> _startSubscription() async {
-    // Request analysis
-    await server.send(SERVER_REQUEST_SET_SUBSCRIPTIONS, ServerSetSubscriptionsParams([ServerService.STATUS]).toJson());
-    // logger.trace('setting subscription for rootTarget $_target');
     await server.send(
-        ANALYSIS_REQUEST_SET_ANALYSIS_ROOTS, AnalysisSetAnalysisRootsParams([targetDir], const []).toJson());
+      SERVER_REQUEST_SET_SUBSCRIPTIONS,
+      ServerSetSubscriptionsParams([ServerService.STATUS]).toJson(),
+    );
+
+    await server.send(
+      ANALYSIS_REQUEST_SET_ANALYSIS_ROOTS,
+      AnalysisSetAnalysisRootsParams(
+        [targetDir], // included: this seems the only to specify the root directory.
+        [targetDir], // excluded: we are not interested in analysis errors so exclude all files from being analyzed.
+      ).toJson(),
+    );
   }
 
   Future<int> stop() async {

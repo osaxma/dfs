@@ -6,6 +6,9 @@ import 'package:dfs/src/analysis_server/client.dart';
 
 import 'dart:io';
 
+// TODO: [flutter] create an exemption list: e.g. `generated_plugin_registrant.dart`
+// TODO: [flutter] find a way to identify stubs (i.e. io vs html) and ignore them
+// TODO: [both] ignore extensions (maybe check for the methods in them?)
 class UnusedTopLevelFinder {
   final Logger logger;
   final Directory directory;
@@ -20,7 +23,7 @@ class UnusedTopLevelFinder {
   Future<List<SearchResult>> find() async {
     // "kind":"FUNCTION","name":"main"
     final topleveldeclaration = await server.handler.findTopLevel(targetRootDir: directory.path);
-    // remove main() functions 
+    // remove main() functions
     topleveldeclaration.removeWhere(
         (element) => element.path.any((element) => element.kind.name == "FUNCTION" && element.name == "main"));
     final unusedTopLevel = <SearchResult>[];
@@ -41,7 +44,7 @@ class UnusedTopLevelFinder {
       print('error getting the results');
       throw Exception('error getting the results');
     });
-    
+
     return unusedTopLevel;
   }
 }
