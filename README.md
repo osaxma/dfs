@@ -1,4 +1,5 @@
-# DFS - Dart Flutter Scripts (warning everything is still WIP)
+# DFS - Dart Flutter Scripts 
+> Warning: everything is WIP.
 
 A collection of useful scripts for dart or flutter projects. 
 
@@ -46,8 +47,6 @@ Each `<script-command>` is shown below under the available scripts.
     <!-- TODO: 
         - find unused `dependencies` across the project (now we only check lib).
         - find unused `dev_dependencies` across the project.  -->
-    
-    Use case: keep the project clean and avoid confusing myself.
 
     ---
 - **Find Unused Top Level Declaration** *(status: MVP)*<br>

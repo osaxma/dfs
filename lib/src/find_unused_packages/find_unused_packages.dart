@@ -86,7 +86,7 @@ class _CollectImportsVisitor extends RecursiveAstVisitor {
     for (var file in files) {
       logger.trace('--> reading ${p.basename(file.path)}');
       final ast = generateASTfromFile(file);
-      // TODO: change to visit children and I think we won't need `CollectImportsVisitor` to be `RecursiveAstVisitor`
+      // TODO: change to visit children and I think we won't need visitor to be `RecursiveAstVisitor`
       ast.accept(visitor);
     }
     return visitor.imports.toSet().toList();

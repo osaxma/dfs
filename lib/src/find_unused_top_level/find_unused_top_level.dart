@@ -21,12 +21,15 @@ class UnusedTopLevelFinder {
   });
 
   Future<List<SearchResult>> find() async {
-    // "kind":"FUNCTION","name":"main"
     final topleveldeclaration = await server.handler.findTopLevel(targetRootDir: directory.path);
-    // remove main() functions
+    // remove main() functions:
+    // "kind":"FUNCTION","name":"main"
     topleveldeclaration.removeWhere(
-        (element) => element.path.any((element) => element.kind.name == "FUNCTION" && element.name == "main"));
+      (element) => element.path.any((element) => element.kind.name == "FUNCTION" && element.name == "main"),
+    );
+
     final unusedTopLevel = <SearchResult>[];
+
     Future<void> addIfNoRef(SearchResult result) async {
       final references = await server.handler.findReferences(
         filePath: result.location.file,
