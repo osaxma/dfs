@@ -22,7 +22,7 @@ class ImportVisitor extends SimpleAstVisitor {
 }
 ```
 
-Now one can do a simple check between the packages from `ImportVisitor.imports` and those from from `pubspec.yaml` to see what's used and what's not.
+Now a simple check between the packages from `ImportVisitor.imports` and those from from `pubspec.yaml` to see what's used and what's not.
 
 This is already implemented here:
 - [find_unused_packages](https://github.com/osaxma/dfs/blob/main/lib/srcfind_unused_packages/find_unused_packages.dart)
@@ -31,9 +31,9 @@ This is already implemented here:
 ### How can I find all unused top level declarations within a project?
 ---
 
-Again, one needs to first find all the top level declaration based on the Dart language grammar then search for any references for these declarations. While one can use the visitor approach from the `analyzer` package (i.e. `SimpleAstVisitor.visitTopLevelVariableDeclaration`), and collect all the top level declarations, how can one search for their references? 
+Again, one needs to first find all the top level declaration based on the Dart language grammar then search for any references for these declarations. While the visitor approach from the `analyzer` package (i.e. `SimpleAstVisitor.visitTopLevelVariableDeclaration`) can be used to collect all the top level declarations, how can the references for those declarations be found? 
 
-If one digs deep into the `analysis_server` package, they'll find a class called [`SearchEngine`](https://github.com/dart-lang/sdk/blob/edbf6300a13095e164a876ee33251ec91fea072f/pkg/analysis_server/lib/src/services/search/search_engine.dart#L43). The search engine has exactly what we need: `SearchEngine.searchReferences` as well as `SearchEngine.searchTopLevelDeclarations` (so no need to visit the ast and collect top level declarations manually). Though, the `analysis_server` package is not intended to be used as a package (i.e. not published on `pub.dev`) but, as the name implies, it is intended to be used as a server. Hence, we will instead use `analysis_server_client` which can communicate with the server to execute the requests that we are interested in. This will be done using [Dart Analysis Server (DAS) Protocol API](https://htmlpreview.github.io/?https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server/doc/api.html). 
+When digging into the `analysis_server` package, a [`SearchEngine`](https://github.com/dart-lang/sdk/blob/edbf6300a13095e164a876ee33251ec91fea072f/pkg/analysis_server/lib/src/services/search/search_engine.dart#L43) class is found. The search engine has exactly what we need: `SearchEngine.searchReferences` as well as `SearchEngine.searchTopLevelDeclarations` (so no need to visit the ast and collect top level declarations manually). Though, the `analysis_server` package is not intended to be used as a package (i.e. not published on `pub.dev`) but, as the name implies, it is intended to be used as a server. Hence, we will instead use `analysis_server_client` which can communicate with the server to execute the requests that we are interested in. This will be done using [Dart Analysis Server (DAS) Protocol API](https://htmlpreview.github.io/?https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server/doc/api.html). 
 
 Now we know that there's a solution. We can spin the analysis server, and do the following:
 
@@ -44,7 +44,7 @@ Now we know that there's a solution. We can spin the analysis server, and do the
 
 **Using Analysis Server Client to find unused top level declarations:**
 
-When using the `analysis_server_client`, we are not communicating directly with the `analysis_server`. We need to use the [Dart Analysis Server (DAS) Protocol API](https://htmlpreview.github.io/?https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server/doc/api.html). The `analysis_server_client` already has the protocol constants generated as code so we can use them directly (defined here: [lib/src/protocol](https://github.com/dart-lang/sdk/tree/main/pkg/analysis_server_client/lib/src/protocol)). We are mainly interested in two APIs:
+When using the `analysis_server_client`, we communicate with the server by using the [Dart Analysis Server (DAS) Protocol API](https://htmlpreview.github.io/?https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server/doc/api.html). The `analysis_server_client` already has the protocol constants generated as code so we can use them directly (defined here: [lib/src/protocol](https://github.com/dart-lang/sdk/tree/main/pkg/analysis_server_client/lib/src/protocol)). We are mainly interested in two APIs:
 
 1 - [`search.findTopLevelDeclarations`](https://htmlpreview.github.io/?https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server/doc/api.html#request_search.findTopLevelDeclarations)
 
