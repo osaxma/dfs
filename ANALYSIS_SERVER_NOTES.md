@@ -138,7 +138,7 @@ First let's take a step back and learn about the available protocols for communi
 
 Back to the server communication. When running the server (typically using `Process.run` in Dart), the communication is carried out using `stdio`. To facilitate the communication, we need a way to parse messages from stdout and errors from stderr, and build requests to be sent through stdin based on the used protocol. 
 
-The `analysis_server` package already generates code for protocol constants which can be found [here for DAS](https://github.com/dart-lang/sdk/tree/main/pkg/analysis_server/lib/protocol) and [here for LSP](https://github.com/dart-lang/sdk/tree/main/pkg/analysis_server/lib/lsp_protocol). That still does not help since `analysis_server` cannot be used as a package. But the `analysis_server_client` package already contains the generated protocol (for `DAS` only) which is exported by the package in this file: [lib/protocol.dart](https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server_client/lib/protocol.dart) so it can be utilized if a one wishes to have their server implementation. 
+The `analysis_server` package already generates code for protocol constants which can be found [here for DAS](https://github.com/dart-lang/sdk/tree/main/pkg/analysis_server/lib/protocol) and [here for LSP](https://github.com/dart-lang/sdk/tree/main/pkg/analysis_server/lib/lsp_protocol). That still does not help since `analysis_server` cannot be used as a package. But the `analysis_server_client` package already contains the generated protocol (for `DAS` only) which is exported by the package in this file: [lib/protocol.dart](https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server_client/lib/protocol.dart) so it can be utilized if one wishes to have their server implementation. 
 
 > Note: the `analysis_server_client` does not have `LSP` implementation. This means, if one wants to use LSP and its generated protocol constants, they need to extract that from the `analysis_server` somehow (see how Dart-Code extension does it -- there's a script somewhere that generates the code). Though for our goals here, `DAS` does what we need. 
 
@@ -186,7 +186,7 @@ If you're curious how the `stdio` communication are being handled, look at [anal
 
 The same approach is carried when we request [`search.findElementReferences`](https://htmlpreview.github.io/?https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server/doc/api.html#request_search.findElementReferences). Since this is a search request, the result will come through: `NotificationHandler.onSearchResults`. If you look at the protocol, there are several types of requests and each one of them has a handler in `NotificationHandler` in addition to several error handlers (e.g. incompatible version). 
 
-Again, the [protocol document](https://htmlpreview.github.io/?https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server/doc/api.html) the type of request and response for each request. Their constants are available in the `analysis_server_client` project under [`lib/src/protocol`](https://github.com/dart-lang/sdk/tree/main/pkg/analysis_server_client/lib/src/protocol) and they are exported by this file:[lib/protocol.dart](https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server_client/lib/protocol.dart). 
+Again, the [protocol document](https://htmlpreview.github.io/?https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server/doc/api.html) has the type of each request and expected response. The constants for both requests and responses are available in the `analysis_server_client` project under [`lib/src/protocol`](https://github.com/dart-lang/sdk/tree/main/pkg/analysis_server_client/lib/src/protocol) and they are exported by this file:[lib/protocol.dart](https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server_client/lib/protocol.dart). 
 
 --- 
 
@@ -215,9 +215,9 @@ Again, the [protocol document](https://htmlpreview.github.io/?https://github.com
     The approach above was tested and it works. No errors are reported even if they exist and requests are handled for excluded files. 
 
 
-- [search.findTopLevelDeclarations](https://htmlpreview.github.io/?https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server/doc/api.html#request_search.findTopLevelDeclarations) searches the entire project and its packages (seen results coming from `~/.pub_cache). Need to find if there's a way to scope the search to the root directory. 
+- [search.findTopLevelDeclarations](https://htmlpreview.github.io/?https://github.com/dart-lang/sdk/blob/main/pkg/analysis_server/doc/api.html#request_search.findTopLevelDeclarations) searches the entire project and its packages (I've seen results coming from `~/.pub_cache). I could not find a way to scope the search to the root directory of the project (i.e. analysis root). 
 
-    The following was a discussion from [Dart-Code Discord server](https://discord.com/channels/615553440969392147/697786943114838067/927221624338538566):
+    The following was a discussion on [Dart-Code Discord server](https://discord.com/channels/615553440969392147/697786943114838067/927221624338538566) about this issue:
 
     **Question by @osaxma:**
 
