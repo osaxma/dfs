@@ -4,7 +4,6 @@
 
 
 ## What are the goals here? 
----
 There were two goals in mind: finding unused-packages and finding unused-top-level-declarations within a dart/flutter project. The approach to each goal is described below:
     
 ### How can I find all unused packages within a project?
