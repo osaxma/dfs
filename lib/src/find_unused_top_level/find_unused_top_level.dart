@@ -48,7 +48,7 @@ class UnusedTopLevelFinder {
     final futures = topleveldeclaration.map(addIfNoRef).toList();
 
     await Future.wait(futures).onError((error, stackTrace) {
-     logger.stderr('error getting the results');
+     logger.stderr('error getting the results: $error');
       throw Exception('error getting the results');
     });
 
