@@ -1,6 +1,6 @@
 name: dfs
 description: Dart Flutter Scripts (DFS) -- collection of useful scripts for Dart and Flutter projects. 
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/osaxma
 # temp until analysis_server_client null-safety is available in pub.dev
 publish_to: none
@@ -27,6 +27,7 @@ dependencies:
       ref: stable
       path: pkg/analysis_server_client
   git: ^2.0.0
+  glob: ^2.0.2
 
 dev_dependencies:
   lints: ^1.0.0

@@ -27,7 +27,7 @@ Each `<script-command>` is shown below under the available scripts.
 <!-- TODO: Make each script a stand-alone package within the project so it's useable elsewhere? -->
 
 - **Find Unused Packages** *(status: MVP)* <br>
-    >**Area:** project hygien<br>
+    >**Area:** project hygiene<br>
     **command**: ```find-unused-packages``` <br>
     **alias:** `fup`
 
@@ -58,11 +58,21 @@ Each `<script-command>` is shown below under the available scripts.
     
     **Sample output**
     ```sh
-    [~/cwd]$ dart run bin/dfs.dart futl
+    [~/cwd]$ dfs find-unused-top-level
         finding unused top level declarations...  
         The following top level declarations are not used anywhere 
             - /cwd/lib/src/version.dart:7:7
             - /cwd/lib/src/common/ast_utils.dart:7:9
+    ```
+
+    To ignore specific files, you can pass globs to `--ignore` such as:
+    ```
+    dfs find-unused-top-level --ignore="lib/**.g.dart","lib/**.freezed.dart","**/genl10n/*.dart"
+    ```
+
+    For more info about the default ignored files, run the help command:
+    ```
+    dfs find-unused-top-level --help
     ```
      ---
 - **Generate Data Classes** *(status: MVP)*<br>
@@ -72,7 +82,7 @@ Each `<script-command>` is shown below under the available scripts.
 
     Generate the following for an existing class (in place):
     - `copyWith` method.
-    - serialization methods (`toMap`/`toJson`) and desirialization factories (`fromMap`/`fromJson`). 
+    - serialization methods (`toMap`/`toJson`) and deserialization factories (`fromMap`/`fromJson`). 
     - Equality (`operator ==`) and `hashcode`. <br><br>
 
     See how the data looks like before and after running the script at:
@@ -90,7 +100,7 @@ Each `<script-command>` is shown below under the available scripts.
     **command**: TBD <br>
     **alias:** TBD
     <!-- This may should take the flutter version into account -->
-    This is mainly for Flutter, and especially for multiplatform code where the name has to be changed in various places. 
+    This is mainly for Flutter, and especially for multi-platform code where the name has to be changed in various places. 
 
     ---
 - **Run Script** *(status: TBD)*<br>
@@ -156,5 +166,5 @@ While There are many packages/executable that do one simple thing (which is grea
         - learn all of their quirks 
         - get lost when the package is no longer maintained.
 
-Hopefully having a single package can help attract more users, and hence more contributors to keep the package sustinable. 
+Hopefully having a single package can help attract more users, and hence more contributors to keep the package sustainable. 
  -->

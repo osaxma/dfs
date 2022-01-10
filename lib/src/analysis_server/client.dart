@@ -8,6 +8,7 @@ import 'package:analysis_server_client/handler/notification_handler.dart';
 import 'package:analysis_server_client/protocol.dart';
 import 'package:analysis_server_client/server.dart';
 import 'package:cli_util/cli_logging.dart';
+import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
 // TODO: make sure there's only one server during the life time of an application
@@ -144,7 +145,6 @@ class _Handler with NotificationHandler, ConnectionHandler {
     bool includePotential = true,
     Duration timeLimit = const Duration(seconds: 15),
   }) async {
-    absNormPath(filePath);
     final params = SearchFindElementReferencesParams(filePath, offset, includePotential).toJson();
     final response = await server.send(SEARCH_REQUEST_FIND_ELEMENT_REFERENCES, params).timeout(
       timeLimit,
@@ -169,6 +169,7 @@ class _Handler with NotificationHandler, ConnectionHandler {
   Future<List<SearchResult>> findTopLevel({
     required String targetRootDir,
     Duration timeLimit = const Duration(seconds: 15),
+    List<String> ignoredFiles = const [],
   }) async {
     // This will return results even from outside the directory (packages in .pub_cache)... n
     // not sure how to scope the results to the root directory only..
@@ -191,9 +192,23 @@ class _Handler with NotificationHandler, ConnectionHandler {
         throw TimeoutException('did not receive search results after ${timeLimit.inSeconds}-seconds');
       },
     );
-    // remove any results from outside the directory
-    return future.where((e) => e.location.file.startsWith(targetRootDir)).toList();
+    return removeIgnoredFiles(future, targetRootDir, ignoredFiles);
   }
+}
+
+List<SearchResult> removeIgnoredFiles(List<SearchResult> result, String targetRootDir, List<String> ignoredFiles) {
+  // first remove anything outside the target directory (e.g. this is out of our control)
+  // follow discussion here: https://groups.google.com/a/dartlang.org/g/analyzer-discuss/c/WgprMl00A18/m/nV12NwZVBgAJ
+  result.removeWhere((e) => !e.location.file.startsWith(targetRootDir));
+  if (ignoredFiles.isEmpty) {
+    return result;
+  }
+
+  final globs = ignoredFiles.map((e) => Glob(e));
+
+  result.removeWhere((res) => globs.any((glob) => glob.matches(p.relative(res.location.file, from: targetRootDir))));
+
+  return result;
 }
 
 String absNormPath(String path) {

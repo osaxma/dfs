@@ -11,8 +11,9 @@ void main(List<String> arguments) async {
     exitCode = 1;
   } finally {
     // the server is a separate process and we need to make sure it's stopped when the application exits.
-    // TODO: find if this is most reliable way to kill the process when the app exists in anyway. 
+    // TODO: find if this is most reliable way to kill the process when the app exists in anyway.
     //       (e.g. what if one used this as a package or with a different etnry point?)
     AnalysisServerClient.forceStop();
   }
+  exit(exitCode);
 }
