@@ -104,3 +104,11 @@ Future<File> getFileByName(Directory directory, String fileName) async {
     rethrow;
   }
 }
+
+int get terminalWidth {
+  if (stdout.hasTerminal) {
+    return stdout.terminalColumns;
+  }
+
+  return 80;
+}
