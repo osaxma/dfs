@@ -32,7 +32,8 @@ class UnusedTopLevelFinder {
     logger.trace('removing main function');
     topleveldeclaration.removeWhere(
       (element) => element.path.any((element) =>
-          element.kind.name == "FUNCTION" && element.name == "main"),
+          (element.kind.name == "FUNCTION" && element.name == "main") ||
+          element.kind.name == "EXTENSION"),
     );
 
     final futures = topleveldeclaration.map(_collectNoRef);
