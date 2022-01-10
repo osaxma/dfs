@@ -6,6 +6,8 @@ import 'package:dfs/src/analysis_server/client.dart';
 
 import 'dart:io';
 
+const _kTimeLimit = Duration(minutes: 1);
+
 // TODO: [flutter] create an exemption list: e.g. `generated_plugin_registrant.dart`
 // TODO: [flutter] find a way to identify stubs (i.e. io vs html) and ignore them
 // TODO: [both] ignore extensions (maybe check for the methods in them?)
@@ -21,37 +23,45 @@ class UnusedTopLevelFinder {
   });
 
   Future<List<SearchResult>> find() async {
-    logger.trace('finding top level declarations');
-    final topleveldeclaration = await server.handler.findTopLevel(targetRootDir: directory.path);
+    final topleveldeclaration = await server.handler
+        .findTopLevel(targetRootDir: directory.path, timeLimit: _kTimeLimit);
+    print('found ${topleveldeclaration.length} top level declarations');
+
     // remove main() functions:
     // "kind":"FUNCTION","name":"main"
     logger.trace('removing main function');
     topleveldeclaration.removeWhere(
-      (element) => element.path.any((element) => element.kind.name == "FUNCTION" && element.name == "main"),
+      (element) => element.path.any((element) =>
+          element.kind.name == "FUNCTION" && element.name == "main"),
+    );
+
+    final futures = topleveldeclaration.map(_collectNoRef);
+
+    final results = await Future.wait(futures).onError((error, stackTrace) {
+      print('error getting the results $error');
+      throw Exception('error getting the results');
+    });
+
+    return results.flattened;
+  }
+
+  Future<List<SearchResult>> _collectNoRef(SearchResult result) async {
+    final references = await server.handler.findReferences(
+      filePath: result.location.file,
+      offset: result.location.offset,
+      timeLimit: _kTimeLimit,
     );
 
     final unusedTopLevel = <SearchResult>[];
 
-    Future<void> addIfNoRef(SearchResult result) async {
-      final references = await server.handler.findReferences(
-        filePath: result.location.file,
-        offset: result.location.offset,
-      );
-
-      if (references.isEmpty) {
-        logger.trace('found unused reference: ${result.location.file}:${result.location.startLine}:${result.location.startColumn}');
-        unusedTopLevel.add(result);
-      }
+    if (references.isEmpty) {
+      unusedTopLevel.add(result);
     }
-
-    logger.trace('finding references for the top level declarations');
-    final futures = topleveldeclaration.map(addIfNoRef).toList();
-
-    await Future.wait(futures).onError((error, stackTrace) {
-     logger.stderr('error getting the results: $error');
-      throw Exception('error getting the results');
-    });
 
     return unusedTopLevel;
   }
+}
+
+extension _ListListExtensions<T> on List<List<T>> {
+  List<T> get flattened => fold([], (a, b) => [...a, ...b]);
 }

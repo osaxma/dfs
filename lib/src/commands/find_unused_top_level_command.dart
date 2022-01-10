@@ -20,16 +20,15 @@ class FindUnusedTopLevelCommand extends DFSCommand {
 
   @override
   FutureOr<void>? run() async {
+    print('listening in directory ${Directory.current}');
     final server = AnalysisServerClient(Directory.current, (e) {
       logger.stderr('listening to server errors: $e');
     }, logger);
     await server.start();
     final progress = logger.progress('finding unused top level declarations');
     final unusedTopLevel = await UnusedTopLevelFinder(
-      directory: Directory.current,
-      logger: logger,
-      server: server,
-    ).find();
+            directory: Directory.current, logger: logger, server: server)
+        .find();
     progress.cancel();
     logger.trace('finding unused top level declaration took ${progress.elapsed.inMilliseconds}-ms ');
     logger.stdout('The following top level declarations are not used anywhere ');
