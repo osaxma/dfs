@@ -7,6 +7,7 @@ import 'package:analysis_server_client/handler/connection_handler.dart';
 import 'package:analysis_server_client/handler/notification_handler.dart';
 import 'package:analysis_server_client/protocol.dart';
 import 'package:analysis_server_client/server.dart';
+import 'package:cli_util/cli_logging.dart';
 import 'package:path/path.dart' as p;
 
 // TODO: make sure there's only one server during the life time of an application
@@ -18,6 +19,7 @@ class AnalysisServerClient {
   late String targetDir;
   final server = Server();
   late _Handler handler;
+  final Logger logger;
 
   static Future<void> forceStop() async {
     if (_server != null) {
@@ -28,9 +30,9 @@ class AnalysisServerClient {
   static AnalysisServerClient? _server;
 
   // TODO: improve the pattern
-  factory AnalysisServerClient(Directory directory, void Function(Object error) onServerError) {
+  factory AnalysisServerClient(Directory directory, void Function(Object error) onServerError, Logger logger) {
     if (_server == null) {
-      _server = AnalysisServerClient._(directory, onServerError);
+      _server = AnalysisServerClient._(directory, onServerError, logger);
     } else {
       // TODO:
       // _server.addErrorListener(onServerError)
@@ -41,6 +43,7 @@ class AnalysisServerClient {
   AnalysisServerClient._(
     Directory directory,
     this.onServerError,
+    this.logger,
   ) {
     if (!directory.existsSync()) {
       throw Exception('Could not find directory $targetDir');
@@ -50,12 +53,16 @@ class AnalysisServerClient {
   }
 
   Future<void> start({String? sdkPath, String? serverPath}) async {
+    logger.trace('starting the server and the dart sdk path is: ${Platform.executable}');
     // this will throw if the server has already started
     await server.start(sdkPath: sdkPath, serverPath: serverPath);
+    logger.trace('start listening to the server');
     server.listenToOutput(notificationProcessor: handler.handleEvent);
     if (!await handler.serverConnected(timeLimit: const Duration(seconds: 15))) {
+      logger.stderr('could not connect to the server after 15 seconds');
       throw TimeoutException('could not connect to the server after 15 seconds');
     }
+    logger.trace('starting subscriptions');
     await _startSubscription();
   }
 

@@ -21,9 +21,11 @@ class UnusedTopLevelFinder {
   });
 
   Future<List<SearchResult>> find() async {
+    logger.trace('finding top level declarations');
     final topleveldeclaration = await server.handler.findTopLevel(targetRootDir: directory.path);
     // remove main() functions:
     // "kind":"FUNCTION","name":"main"
+    logger.trace('removing main function');
     topleveldeclaration.removeWhere(
       (element) => element.path.any((element) => element.kind.name == "FUNCTION" && element.name == "main"),
     );
@@ -37,14 +39,16 @@ class UnusedTopLevelFinder {
       );
 
       if (references.isEmpty) {
+        logger.trace('found unused reference: ${result.location.file}:${result.location.startLine}:${result.location.startColumn}');
         unusedTopLevel.add(result);
       }
     }
 
+    logger.trace('finding references for the top level declarations');
     final futures = topleveldeclaration.map(addIfNoRef).toList();
 
     await Future.wait(futures).onError((error, stackTrace) {
-      print('error getting the results');
+     logger.stderr('error getting the results');
       throw Exception('error getting the results');
     });
 
