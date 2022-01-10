@@ -29,6 +29,7 @@ class UnusedTopLevelFinder {
 
     // remove main() functions:
     // "kind":"FUNCTION","name":"main"
+    logger.trace('removing main function');
     topleveldeclaration.removeWhere(
       (element) => element.path.any((element) =>
           element.kind.name == "FUNCTION" && element.name == "main"),
