@@ -33,6 +33,10 @@ class UnusedPackagesFinder {
 
     logger.trace('found the following dart files:');
     dartFilesInLibFolder.forEach((f) => logger.trace(p.relative(f.path, from: directory.path)));
+    if(dependencies.isEmpty) {
+      logger.trace('pubspec.yaml does not have any dependencies');
+      return const [];
+    }
     logger.trace('found the following dependencies:');
     logger.trace(dependencies.reduce((value, element) => value + ' | ' + element));
 
