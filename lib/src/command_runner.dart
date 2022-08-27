@@ -5,7 +5,7 @@ import 'package:dfs/src/commands/find_unused_top_level_command.dart';
 
 import 'version.dart';
 import 'commands/generate_data_classes_command.dart';
-// TBH: the structure here resembles [melos pacakge](https://github.com/invertase/melos)
+// TBH: the structure here resembles [melos package](https://github.com/invertase/melos)
 
 class DFSCommandRunner extends CommandRunner<void> {
   // TODO
@@ -25,7 +25,7 @@ class DFSCommandRunner extends CommandRunner<void> {
       'version',
       abbr: 'v',
       negatable: false,
-      help: 'Print the current Melos version.',
+      help: 'Print the current dfs version.',
     );
 
     addCommand(FindUnusedPackagesCommand());
